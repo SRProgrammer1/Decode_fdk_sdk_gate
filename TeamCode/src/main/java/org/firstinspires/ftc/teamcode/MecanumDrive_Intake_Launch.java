@@ -30,7 +30,7 @@ public class MecanumDrive_Intake_Launch extends OpMode {
     Servo_Intake servo = new Servo_Intake();
 
     double forward, right, rotate;
-    double maxSpeed = 1.0;
+    double maxSpeed = 0.5;
     double start_stop;
 
     @Override
