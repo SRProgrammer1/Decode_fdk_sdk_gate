@@ -14,10 +14,10 @@ public class MecanumDrive_Field
     private IMU imu;
 
     public void init(HardwareMap hwMap){
-        frontLeftDrive = hwMap.get(DcMotor.class, "front_left_drive");
-        backLeftDrive = hwMap.get(DcMotor.class, "back_left_drive");
-        frontRightDrive = hwMap.get(DcMotor.class, "front_right_drive");
-        backRightDrive = hwMap.get(DcMotor.class, "back_right_drive");
+        frontLeftDrive = hwMap.get(DcMotor.class, "f_l_dr");
+        backLeftDrive = hwMap.get(DcMotor.class, "b_l_dr");
+        frontRightDrive = hwMap.get(DcMotor.class, "f_r_dr");
+        backRightDrive = hwMap.get(DcMotor.class, "b_r_dr");
 
 
         // We set the left motors in reverse which is needed for drive trains where the left

@@ -7,7 +7,7 @@ public class TestBench {
     private DcMotor motor;
 
     public void init(HardwareMap hwMap){
-        motor = hwMap.get(DcMotor.class, "Linear");
+        motor = hwMap.get(DcMotor.class, "fly_wheel_1");
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     public void setMotorSpeed(double speed) {

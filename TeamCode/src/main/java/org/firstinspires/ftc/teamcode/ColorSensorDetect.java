@@ -1,14 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
-@TeleOp
-public class Servo  extends OpMode {
+import org.firstinspires.ftc.teamcode.mechanisms.ColorSensor;
 
-    ServoBench bench = new ServoBench();
+@TeleOp
+public class ColorSensorDetect extends OpMode {
+
+    ColorSensor bench = new ColorSensor();
 
     @Override
     public void init() {
@@ -17,6 +17,6 @@ public class Servo  extends OpMode {
 
     @Override
     public void loop() {
-        bench.setServoRot(-1.0);
+        bench.getDetectedColor(telemetry);
     }
 }

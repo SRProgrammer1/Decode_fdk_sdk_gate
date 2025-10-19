@@ -1,19 +1,30 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.mechanisms.Kicker;
+
+@TeleOp
 @Disabled
-@Autonomous
-public class HelloWord extends OpMode {
+public class ServoTest extends OpMode {
+
+    Kicker servo = new Kicker();
+
     @Override
     public void init() {
-        telemetry.addData("Hello", "Samarth Reddy");
+        servo.init(hardwareMap);
     }
 
     @Override
     public void loop() {
+        if (gamepad1.a) {
+            servo.setServoPos(0.4);
+        }
 
+        else {
+            servo.setServoPos(0.6);
+        }
     }
 }

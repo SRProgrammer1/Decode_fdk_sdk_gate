@@ -4,13 +4,13 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Field;
-import org.firstinspires.ftc.teamcode.mechanisms.Servo_Intake;
+import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 
 @TeleOp
 public class MecanumFieldOrientatedOpmode extends OpMode {
 
     MecanumDrive_Field drive = new MecanumDrive_Field();
-    Servo_Intake servo = new Servo_Intake();
+    Ramp_Servo servo = new Ramp_Servo();
 
 
     double forward, right, rotate;
@@ -44,7 +44,7 @@ public class MecanumFieldOrientatedOpmode extends OpMode {
         else if (gamepad1.y) {
             start_stop = 0.0;
         }
-        servo.setServoRot(start_stop);
+        servo.setServo_ramp(start_stop);
     }
 
 }

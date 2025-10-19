@@ -33,7 +33,21 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
+import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
+import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
+import org.firstinspires.ftc.teamcode.mechanisms.TestBench1;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+
+
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -62,11 +76,22 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
-@Disabled
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+
+@TeleOp(name="Main Code_1", group="Linear OpMode")
 //@Disabled
 public class BasicOmniOpMode_Linear_1 extends LinearOpMode {
+    ServoBench bench = new ServoBench();
 
+
+    DcMotorEx motor;
+    DcMotorEx motor1;
+
+    FlyWheel_Launch_SetVelocity launch = new FlyWheel_Launch_SetVelocity();
+    double targetRPM = 0;
+
+    DcMotor intakeMotor;
+    TestBench bench1 = new TestBench();
+    TestBench1 bench2 = new TestBench1();
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontLeftDrive = null;
@@ -74,15 +99,23 @@ public class BasicOmniOpMode_Linear_1 extends LinearOpMode {
     private DcMotor frontRightDrive = null;
     private DcMotor backRightDrive = null;
 
+    boolean ServoOn = false;
+
+
+
     @Override
     public void runOpMode() {
 
+        launch.init(hardwareMap);
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
+
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "f_l_dr");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "b_l_dr");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "f_r_dr");
+        backRightDrive = hardwareMap.get(DcMotor.class, "b_r_dr");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -106,21 +139,45 @@ public class BasicOmniOpMode_Linear_1 extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        bench.init(hardwareMap);
+        bench1.init(hardwareMap);
+        bench2.init(hardwareMap);
+
+
+
+        motor = hardwareMap.get(DcMotorEx.class, "fly_wheel_1");
+        motor1 = hardwareMap.get(DcMotorEx.class, "fly_wheel_2");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+
+        motor.setDirection(DcMotor.Direction.REVERSE);
+
+
+        //motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //motor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // Encoder ticks per revolution (depends on your motor!)
+        double TICKS_PER_REV = 28;  // REV HD Hex motor example
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.right_stick_x;
-            double yaw     =  gamepad1.left_stick_x;
+            double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+            double lateral = gamepad1.right_stick_x;
+            double yaw = gamepad1.left_stick_x;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double frontLeftPower  = axial + lateral + yaw;
+            double frontLeftPower = axial + lateral + yaw;
             double frontRightPower = axial - lateral - yaw;
-            double backLeftPower   = axial - lateral + yaw;
-            double backRightPower  = axial + lateral - yaw;
+            double backLeftPower = axial - lateral + yaw;
+            double backRightPower = axial + lateral - yaw;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -128,11 +185,13 @@ public class BasicOmniOpMode_Linear_1 extends LinearOpMode {
             max = Math.max(max, Math.abs(backLeftPower));
             max = Math.max(max, Math.abs(backRightPower));
 
+
+
             if (max > 1.0) {
-                frontLeftPower  /= max;
+                frontLeftPower /= max;
                 frontRightPower /= max;
-                backLeftPower   /= max;
-                backRightPower  /= max;
+                backLeftPower /= max;
+                backRightPower /= max;
             }
 
             // This is test code:
@@ -163,5 +222,61 @@ public class BasicOmniOpMode_Linear_1 extends LinearOpMode {
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.update();
+
+            if (gamepad1.right_bumper) {
+                targetRPM = 5000;
+            } else if (gamepad1.right_trigger > 0.5) {
+                targetRPM = 3000;
+            } else if (gamepad1.left_bumper) {
+                targetRPM = 1000;
+            } else if (gamepad1.left_trigger > 0.5) {
+                targetRPM = 0;
+            }
+
+            // Apply target RPM (motor2 will spin opposite automatically)
+            launch.setMotorRPM(targetRPM);
+
+            telemetry.addData("Target RPM", targetRPM);
+            telemetry.addData("Motor1 Velocity", launch.getMotor1Velocity());
+            telemetry.addData("Motor2 Velocity", launch.getMotor2Velocity());
+            telemetry.update();
+
+
+
+/*
+            if (gamepad1.x) {
+                targetRPM = 10;
+                double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
+                motor.setVelocity(ticksPerSecond);
+                motor1.setVelocity(ticksPerSecond);
+            }
+            else if (gamepad1.y) {
+                targetRPM = 240;
+                double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
+                motor.setVelocity(ticksPerSecond);
+                motor1.setVelocity(ticksPerSecond);
+            }
+            else if (gamepad1.b) {
+                targetRPM = 600;
+                double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
+                motor.setVelocity(ticksPerSecond);
+                motor1.setVelocity(ticksPerSecond);
+            }
+            else if (gamepad1.a) {
+                targetRPM = 0;
+                double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
+                motor.setVelocity(ticksPerSecond);
+                motor1.setVelocity(ticksPerSecond);
+            }
+            else if (gamepad1.left_bumper) {
+                targetRPM = 400.0;
+                //double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
+                intakeMotor.setPower(-1);
+            }
+            else if (gamepad1.right_bumper) {
+                intakeMotor.setPower(0);
+            }
+ */
         }
-    }}
+    }
+}

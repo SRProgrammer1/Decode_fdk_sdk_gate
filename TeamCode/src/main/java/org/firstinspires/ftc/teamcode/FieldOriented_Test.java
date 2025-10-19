@@ -23,10 +23,10 @@ public class FieldOriented_Test extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Motors
-        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_drive");
-        frontRight = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backLeft   = hardwareMap.get(DcMotor.class, "back_left_drive");
-        backRight  = hardwareMap.get(DcMotor.class, "back_right_drive");
+        frontLeft  = hardwareMap.get(DcMotor.class, "f_l_dr");
+        frontRight = hardwareMap.get(DcMotor.class, "f_r_dr");
+        backLeft   = hardwareMap.get(DcMotor.class, "b_l_dr");
+        backRight  = hardwareMap.get(DcMotor.class, "b_r_dr");
 
         // Reverse motors as needed for your drivetrain
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);

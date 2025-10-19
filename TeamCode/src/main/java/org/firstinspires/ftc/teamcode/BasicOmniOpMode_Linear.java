@@ -33,11 +33,19 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
+import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
+import org.firstinspires.ftc.teamcode.mechanisms.TestBench1;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+
+
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -67,10 +75,18 @@ import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+@TeleOp(name="Main Code", group="Linear OpMode")
 //@Disabled
 public class BasicOmniOpMode_Linear extends LinearOpMode {
     ServoBench bench = new ServoBench();
+
+    double targetRPM = 0;
+    DcMotorEx motor;
+    DcMotorEx motor1;
+
+    DcMotor intakeMotor;
+    TestBench bench1 = new TestBench();
+    TestBench1 bench2 = new TestBench1();
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontLeftDrive = null;
@@ -78,20 +94,19 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     private DcMotor frontRightDrive = null;
     private DcMotor backRightDrive = null;
 
-    @Override
-    public void init() {
-        bench.init(hardwareMap);
-    }
+    boolean ServoOn = false;
+
+
 
     @Override
     public void runOpMode() {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "f_l_dr");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "b_l_dr");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "f_r_dr");
+        backRightDrive = hardwareMap.get(DcMotor.class, "b_r_dr");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -115,6 +130,30 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        bench.init(hardwareMap);
+        bench1.init(hardwareMap);
+        bench2.init(hardwareMap);
+
+
+
+        motor = hardwareMap.get(DcMotorEx.class, "fly_wheel_1");
+        motor1 = hardwareMap.get(DcMotorEx.class, "fly_wheel_2");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+
+        motor.setDirection(DcMotor.Direction.REVERSE);
+
+
+        //motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //motor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // Encoder ticks per revolution (depends on your motor!)
+        double TICKS_PER_REV = 28;  // REV HD Hex motor example
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             double max;
@@ -136,6 +175,8 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
             max = Math.max(max, Math.abs(backLeftPower));
             max = Math.max(max, Math.abs(backRightPower));
+
+
 
             if (max > 1.0) {
                 frontLeftPower /= max;
@@ -172,6 +213,25 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.update();
+
+
+
+            if (gamepad1.right_bumper) {
+                bench1.setMotorSpeed(0.5);
+                bench2.setMotorSpeed(0.5);
+            }
+            if (gamepad1.right_trigger > 0.5) {
+                bench1.setMotorSpeed(0.42);
+                bench2.setMotorSpeed(0.42);
+            }
+            if (gamepad1.left_bumper) {
+                bench1.setMotorSpeed(0.0);
+                bench2.setMotorSpeed(0.0);
+            }
+            if(gamepad1.left_trigger > 0.5) {
+                bench1.setMotorSpeed(0.38);
+                bench2.setMotorSpeed(0.38);
+            }
         }
     }
 }
