@@ -30,7 +30,7 @@ public class MecanumDrive_Robot {
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-
+/*
     public void drive_robot(double forward, double right, double rotate, double maxSpeed) {
         // This calculates the power needed for each wheel based on the amount of forward,
         // strafe right, and rotate
@@ -67,4 +67,27 @@ public class MecanumDrive_Robot {
         backLeftDrive.setPower(maxSpeed * (backLeftPower / maxPower));
         backRightDrive.setPower(maxSpeed * (backRightPower / maxPower));
     }
+ */
+
+    public void drive_robot(double forward, double right, double rotate, double maxSpeed) {
+        double frontLeftPower  = forward + right + rotate;
+        double frontRightPower = forward - right - rotate;
+        double backLeftPower   = forward - right + rotate;
+        double backRightPower  = forward + right - rotate;
+
+        // Normalize powers if any exceed 1.0
+        double maxPower = Math.max(
+                1.0,
+                Math.max(Math.abs(frontLeftPower),
+                        Math.max(Math.abs(frontRightPower),
+                                Math.max(Math.abs(backLeftPower), Math.abs(backRightPower))))
+        );
+
+        // Apply power with scaling
+        frontLeftDrive.setPower((frontLeftPower / maxPower) * maxSpeed);
+        frontRightDrive.setPower((frontRightPower / maxPower) * maxSpeed);
+        backLeftDrive.setPower((backLeftPower / maxPower) * maxSpeed);
+        backRightDrive.setPower((backRightPower / maxPower) * maxSpeed);
+    }
+
 }

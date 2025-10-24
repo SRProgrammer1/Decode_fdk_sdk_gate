@@ -4,13 +4,13 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class ServoBench {
-    private CRServo servoRot;
+    private CRServo kicker;
 
     public void init(HardwareMap hwMap) {
-        servoRot = hwMap.get(CRServo.class, "servo_rot");
+        kicker = hwMap.get(CRServo.class, "Kicker");
     }
 
     public void setServoRot(double power) {
-        servoRot.setPower(power);
+        kicker.setPower(power);
     }
 }

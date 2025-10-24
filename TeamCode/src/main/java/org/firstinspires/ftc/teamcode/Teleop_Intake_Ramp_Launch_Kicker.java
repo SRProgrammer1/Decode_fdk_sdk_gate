@@ -43,7 +43,7 @@ public class Teleop_Intake_Ramp_Launch_Kicker extends OpMode {
 
     @Override
     public void loop() {
-        forward = -gamepad1.left_stick_y;
+        forward = gamepad1.left_stick_y;
         right = gamepad1.right_stick_x;
         rotate = gamepad1.left_stick_x;
 

@@ -192,7 +192,7 @@ public class AprilTag_Test extends LinearOpMode
             } else {
 
                 // drive using manual POV Joystick mode.  Slow things down to make the robot more controlable.
-                drive  = -gamepad1.left_stick_y;
+                drive  = gamepad1.left_stick_y;
                 strafe = gamepad1.right_stick_x;
                 turn   = gamepad1.left_stick_x;
                 telemetry.addData("Manual","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);

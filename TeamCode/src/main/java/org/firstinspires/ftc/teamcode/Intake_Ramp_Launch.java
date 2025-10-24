@@ -6,11 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
+import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
-@TeleOp(name = "Teleop", group = "TeleOp")
+@TeleOp(name = "TeleOp", group = "TeleOp")
 public class Intake_Ramp_Launch extends OpMode {
 
+    ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive_r = new MecanumDrive_Robot();
     FlyWheel_Launch_SetPower launch = new FlyWheel_Launch_SetPower();
     Ramp_Servo servo = new Ramp_Servo();
@@ -27,6 +29,8 @@ public class Intake_Ramp_Launch extends OpMode {
         launch.init(hardwareMap);
         servo.init(hardwareMap);
         intake_motor.init(hardwareMap);
+        kicker.init(hardwareMap);
+
 
         telemetry.addData("Status", "Initialized");
         if (!launch.isInitialized()) {
@@ -37,7 +41,7 @@ public class Intake_Ramp_Launch extends OpMode {
 
     @Override
     public void loop() {
-        forward = -gamepad1.left_stick_y;
+        forward = gamepad1.left_stick_y;
         right = gamepad1.right_stick_x;
         rotate = gamepad1.left_stick_x;
 
@@ -73,6 +77,14 @@ public class Intake_Ramp_Launch extends OpMode {
         }
 
         launch.setMotorSpeed(left_motor, right_motor);
+
+        if (gamepad1.a) {
+            kicker.setServoRot(1.0);
+        }
+        else if (gamepad1.b){
+            kicker.setServoRot(0.0);
+        }
+
 
         // Debug feedback
         telemetry.addData("Left Flywheel Power", left_motor);
