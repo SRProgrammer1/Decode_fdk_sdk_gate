@@ -90,4 +90,9 @@ public class MecanumDrive_Robot {
         backRightDrive.setPower((backRightPower / maxPower) * maxSpeed);
     }
 
+    public DcMotor getFrontLeft() { return frontLeftDrive; }
+    public DcMotor getFrontRight() { return frontRightDrive; }
+    public DcMotor getBackLeft() { return backLeftDrive; }
+    public DcMotor getBackRight() { return backRightDrive; }
+
 }

@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 
 
-
+@Disabled
 @TeleOp(name="Auto Rotate and Drive to AprilTag", group = "Concept")
 public class RobotAutoDriveToAprilTagOmni_Test2 extends LinearOpMode {
 

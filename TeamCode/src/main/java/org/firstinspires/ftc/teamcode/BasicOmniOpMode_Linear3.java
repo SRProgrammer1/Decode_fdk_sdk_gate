@@ -64,6 +64,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+@Disabled
 
 public class BasicOmniOpMode_Linear3 extends LinearOpMode {
 

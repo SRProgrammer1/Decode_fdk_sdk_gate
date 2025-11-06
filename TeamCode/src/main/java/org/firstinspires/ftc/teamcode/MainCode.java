@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
 import org.firstinspires.ftc.teamcode.mechanisms.TestBench1;
+@Disabled
 
 @TeleOp(name="Main Code (Velocity Control)", group="Linear OpMode")
 public class MainCode extends LinearOpMode {
@@ -31,6 +33,7 @@ public class MainCode extends LinearOpMode {
     private DcMotor backRightDrive = null;
 
     @Override
+
     public void runOpMode() {
 
         // Initialize drive motors

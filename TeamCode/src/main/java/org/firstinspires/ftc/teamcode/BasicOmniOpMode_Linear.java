@@ -76,7 +76,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @TeleOp(name="Main Code", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class BasicOmniOpMode_Linear extends LinearOpMode {
     ServoBench bench = new ServoBench();
 

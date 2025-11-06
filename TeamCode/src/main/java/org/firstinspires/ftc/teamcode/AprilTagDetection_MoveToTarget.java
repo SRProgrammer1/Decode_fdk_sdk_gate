@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import java.util.List;
 
 @TeleOp(name = "AprilTag Move To Target (MecanumDrive_Robot)", group = "Test")
+@Disabled
 
 public class AprilTagDetection_MoveToTarget extends LinearOpMode {
 
