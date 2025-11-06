@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
-@Autonomous(name = "Autonomous_Blue_FarLaunch_withoutCam", group = "Auto")
-public class Autonomous_Blue_Far_lauch extends LinearOpMode {
+@Autonomous(name = "Autonomous_Red_FarLaunch_WithoutCam", group = "Auto")
+public class Autonomous_Red_Far_lauch_withoutCam extends LinearOpMode {
 
     private MecanumDrive_Robot drive = new MecanumDrive_Robot();
     private Ramp_Servo servo = new Ramp_Servo();
@@ -53,6 +53,7 @@ public class Autonomous_Blue_Far_lauch extends LinearOpMode {
             // === Step 4: Start intake + kicker + ramp ===
             telemetry.addLine("Starting intake and kicker...");
             telemetry.update();
+            //Launch
             intake.setMotorSpeed_intake(1.0);
             kicker.setServoRot(1.0);
             servo.setServo_ramp(1.0);
@@ -67,20 +68,22 @@ public class Autonomous_Blue_Far_lauch extends LinearOpMode {
             telemetry.addLine("Shooting complete. Moving backward...");
             telemetry.update();
             sleep(500);
+            //Drive Forward
             driveDistance(12, 0.4);
 
-            turnDegreesLeft(280, 0.4);
+
+            turnDegreesRight(280, 0.4);
             sleep(500);
             // === Step 6: Drive backward 24 inches (was forward) ===
             intake.setMotorSpeed_intake(1.0);
             servo.setServo_ramp(1.0);
             driveDistance(-25, 0.25);
             sleep(500);
-            driveDistance(17, 0.4);
+            driveDistance(22, 0.4);
            // sleep(500);
             //flywheel.setMotorSpeed(0.40, 0.40);
            // sleep(500);
-            turnDegreesLeft(110, 0.4);
+            turnDegreesRight(130, 0.4);
             driveDistance(-12, 0.4);
 
 
@@ -131,7 +134,7 @@ public class Autonomous_Blue_Far_lauch extends LinearOpMode {
         drive.drive_robot(0, 0, 0, 0);
     }
 
-    private void turnDegreesLeft(double degrees, double speed) {
+    private void turnDegreesRight(double degrees, double speed) {
         double turnCircumference = Math.PI * ROBOT_TRACK_WIDTH_INCHES;
         double turnDistance = (degrees / 360.0) * turnCircumference;
         int targetTicks = (int) (turnDistance * TICKS_PER_INCH);
@@ -149,7 +152,7 @@ public class Autonomous_Blue_Far_lauch extends LinearOpMode {
 
         int avgTicks;
         do {
-            drive.drive_robot(0, -1.0, 0, speed); // rotate left (negative rotation)
+            drive.drive_robot(0, 1.0, 0, speed); // rotate left (negative rotation)
             avgTicks = (Math.abs(drive.getFrontLeft().getCurrentPosition())
                     + Math.abs(drive.getFrontRight().getCurrentPosition())
                     + Math.abs(drive.getBackLeft().getCurrentPosition())
