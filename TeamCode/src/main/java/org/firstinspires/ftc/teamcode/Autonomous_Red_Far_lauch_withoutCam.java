@@ -79,6 +79,7 @@ public class Autonomous_Red_Far_lauch_withoutCam extends LinearOpMode {
             servo.setServo_ramp(1.0);
             driveDistance(-25, 0.25);
             sleep(500);
+
             driveDistance(22, 0.4);
            // sleep(500);
             //flywheel.setMotorSpeed(0.40, 0.40);
@@ -95,7 +96,11 @@ public class Autonomous_Red_Far_lauch_withoutCam extends LinearOpMode {
 
             driveDistance(14, 0.4);
 
-
+            //Stop all mechanisms
+            servo.setServo_ramp(0.0);
+            intake.setMotorSpeed_intake(0.0);
+            kicker.setServoRot(0.0);
+            flywheel.setMotorSpeed(0.0, 0.0);
 
             telemetry.addLine("Autonomous routine complete!");
             telemetry.update();

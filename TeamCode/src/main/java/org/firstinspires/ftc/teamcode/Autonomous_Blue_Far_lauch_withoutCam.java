@@ -64,13 +64,16 @@ public class Autonomous_Blue_Far_lauch_withoutCam extends LinearOpMode {
             kicker.setServoRot(0.0);
             servo.setServo_ramp(0.0);
 
-            telemetry.addLine("Shooting complete. Moving backward...");
+            telemetry.addLine("Shooting complete. Moving forward...");
             telemetry.update();
             sleep(500);
+
             driveDistance(12, 0.4);
 
             turnDegreesLeft(280, 0.4);
             sleep(500);
+
+
             // === Step 6: Drive backward 24 inches (was forward) ===
             intake.setMotorSpeed_intake(1.0);
             servo.setServo_ramp(1.0);
