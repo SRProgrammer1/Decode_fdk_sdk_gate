@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
-@Autonomous(name = "Autonomous_RedTeam", group = "Auto")
+@Autonomous(name = "Autonomous_RED_Drive_WithoutCAM", group = "Auto")
 public class Autonomous_RedTeam_WithoutCamera extends LinearOpMode {
 
     private MecanumDrive_Robot drive = new MecanumDrive_Robot();

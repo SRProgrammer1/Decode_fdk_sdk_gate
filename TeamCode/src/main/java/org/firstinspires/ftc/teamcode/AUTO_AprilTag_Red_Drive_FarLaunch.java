@@ -92,7 +92,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="AUTO_AprilTag_RED_Drive_Final", group = "Concept")
+@Autonomous(name="AUTO_AprilTag_RED_Drive_FAR_Launch", group = "Concept")
 //@Disabled
 public class AUTO_AprilTag_Red_Drive_FarLaunch extends LinearOpMode
 {
