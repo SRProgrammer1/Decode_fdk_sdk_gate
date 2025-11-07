@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -18,49 +18,47 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 @Disabled
-@Autonomous(name="BlueTeam", group = "Concept")
-public class TestTag extends LinearOpMode {
+@Autonomous(name="BlueTeam_CenterYaw_Spin_Fixed", group = "Concept")
+public class TestTag1 extends LinearOpMode {
 
-    final double DESIRED_DISTANCE = 12.0; // inches
+    final double DESIRED_DISTANCE = 12.0;
     final double SPEED_GAIN  = 0.02;
     final double STRAFE_GAIN = 0.015;
-    final double TURN_GAIN   = 0.01;
+    final double TURN_GAIN   = 0.005;
 
-    final double MAX_AUTO_SPEED = 0.5;
-    final double MAX_AUTO_STRAFE= 0.5;
-    final double MAX_AUTO_TURN  = 0.3;
+    final double MAX_AUTO_SPEED  = 0.5;
+    final double MAX_AUTO_STRAFE = 0.5;
+    final double MAX_AUTO_TURN   = 0.5;
+
+    final boolean CAMERA_FACING_BACK = true;
 
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
 
     private static final boolean USE_WEBCAM = true;
-    private static final int DESIRED_TAG_ID = 585;   // ✅ Only look for tag ID 585
+    private static final int DESIRED_TAG_ID = 585;
 
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
     private AprilTagDetection desiredTag = null;
 
-    double left_motor = 0.0, right_motor = 0.0;
     FlyWheel_Launch_SetPower launch = new FlyWheel_Launch_SetPower();
+    double left_motor = 0.0, right_motor = 0.0;
 
     @Override
     public void runOpMode() {
-        boolean targetFound = false;
-        double drive = 0, strafe = 0, turn = 0;
 
-        initAprilTag();
-
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "f_l_dr");
+        frontLeftDrive  = hardwareMap.get(DcMotor.class, "f_l_dr");
         frontRightDrive = hardwareMap.get(DcMotor.class, "f_r_dr");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "b_l_dr");
-        backRightDrive = hardwareMap.get(DcMotor.class, "b_r_dr");
+        backLeftDrive   = hardwareMap.get(DcMotor.class, "b_l_dr");
+        backRightDrive  = hardwareMap.get(DcMotor.class, "b_r_dr");
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        if (USE_WEBCAM)
-            setManualExposure(6, 250);
+        initAprilTag();
+        if (USE_WEBCAM) setManualExposure(6, 250);
 
         telemetry.addData(">", "Touch START to begin");
         telemetry.update();
@@ -68,52 +66,51 @@ public class TestTag extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            targetFound = false;
+            boolean targetFound = false;
             desiredTag = null;
 
-            // Scan for AprilTags
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();
             for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null && detection.id == DESIRED_TAG_ID) {
+                if (detection.id == DESIRED_TAG_ID) {
                     targetFound = true;
                     desiredTag = detection;
                     break;
                 }
             }
 
-            if (targetFound) {
-                telemetry.addData("Tag Found", "ID %d", desiredTag.id);
+            double drive = 0;
+            double strafe = 0;
+            double turn;
 
-                double rangeError   = desiredTag.ftcPose.range - DESIRED_DISTANCE;
+            if (targetFound) {
+                // Stop spinning when tag is found
+                turn = 0;
+
+                // Forward/backward and strafe to align with tag
+                double rangeError = desiredTag.ftcPose.range - DESIRED_DISTANCE;
                 double headingError = desiredTag.ftcPose.bearing;
-                double yawError     = desiredTag.ftcPose.yaw;
+                double yawError = desiredTag.ftcPose.yaw;
 
                 drive  = Range.clip(-rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn   = Range.clip(-headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                strafe = Range.clip(yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+                strafe = Range.clip(headingError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
-// Stop small rotation/strafe jitter when tag is centered
-                if (Math.abs(headingError) < 1.5) turn = 0;    // degrees threshold for alignment
-                if (Math.abs(yawError) < 1.0) strafe = 0;
-
-// Stop if close enough to tag
+                // Stop small jitters and start launcher
                 if (Math.abs(rangeError) < 2.0) {
                     drive = 0;
                     strafe = 0;
-                    turn = 0;
-                    telemetry.addData("Status", "At target distance");
+
                     left_motor = 0.55;
                     right_motor = 0.55;
                     launch.setMotorSpeed(left_motor, right_motor);
                 }
 
-
+                telemetry.addData("Status", "Tag found! Aligning...");
             } else {
-                // Rotate to search for tag
+                // Spin in place until tag is detected
+                turn = 0.5; // positive = clockwise
                 drive = 0;
                 strafe = 0;
-                turn = 0.3; // rotate in place slowly
-                telemetry.addData("Searching", "Rotating to find tag ID %d...", DESIRED_TAG_ID);
+                telemetry.addData("Searching", "Spinning for tag ID %d...", DESIRED_TAG_ID);
             }
 
             telemetry.addData("Drive", "%.2f", drive);
@@ -127,11 +124,12 @@ public class TestTag extends LinearOpMode {
         }
     }
 
+    // Corrected mecanum drive directions
     public void moveRobot(double x, double y, double yaw) {
-        double frontLeftPower  = x + y + yaw;
-        double frontRightPower = x - y - yaw;
-        double backLeftPower   = x - y + yaw;
-        double backRightPower  = x + y - yaw;
+        double frontLeftPower  = -x + y + yaw;
+        double frontRightPower = -x - y - yaw;
+        double backLeftPower   = -x - y + yaw;
+        double backRightPower  = -x + y - yaw;
 
         double max = Math.max(1.0, Math.max(Math.abs(frontLeftPower),
                 Math.max(Math.abs(frontRightPower),

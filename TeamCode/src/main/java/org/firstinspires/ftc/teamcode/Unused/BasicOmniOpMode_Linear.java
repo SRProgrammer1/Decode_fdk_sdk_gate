@@ -27,24 +27,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
 import org.firstinspires.ftc.teamcode.mechanisms.TestBench1;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 
@@ -77,17 +71,14 @@ import java.util.concurrent.TimeUnit;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Main Code_1", group="Linear OpMode")
+@TeleOp(name="Main Code", group="Linear OpMode")
 @Disabled
-public class BasicOmniOpMode_Linear_1 extends LinearOpMode {
+public class BasicOmniOpMode_Linear extends LinearOpMode {
     ServoBench bench = new ServoBench();
 
-
+    double targetRPM = 0;
     DcMotorEx motor;
     DcMotorEx motor1;
-
-    FlyWheel_Launch_SetVelocity launch = new FlyWheel_Launch_SetVelocity();
-    double targetRPM = 0;
 
     DcMotor intakeMotor;
     TestBench bench1 = new TestBench();
@@ -105,10 +96,6 @@ public class BasicOmniOpMode_Linear_1 extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-
-        launch.init(hardwareMap);
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
@@ -223,60 +210,24 @@ public class BasicOmniOpMode_Linear_1 extends LinearOpMode {
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.update();
 
+
+
             if (gamepad1.right_bumper) {
-                targetRPM = 5000;
-            } else if (gamepad1.right_trigger > 0.5) {
-                targetRPM = 3000;
-            } else if (gamepad1.left_bumper) {
-                targetRPM = 1000;
-            } else if (gamepad1.left_trigger > 0.5) {
-                targetRPM = 0;
+                bench1.setMotorSpeed(0.5);
+                bench2.setMotorSpeed(0.5);
             }
-
-            // Apply target RPM (motor2 will spin opposite automatically)
-            launch.setMotorRPM(targetRPM);
-
-            telemetry.addData("Target RPM", targetRPM);
-            telemetry.addData("Motor1 Velocity", launch.getMotor1Velocity());
-            telemetry.addData("Motor2 Velocity", launch.getMotor2Velocity());
-            telemetry.update();
-
-
-
-/*
-            if (gamepad1.x) {
-                targetRPM = 10;
-                double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
-                motor.setVelocity(ticksPerSecond);
-                motor1.setVelocity(ticksPerSecond);
+            if (gamepad1.right_trigger > 0.5) {
+                bench1.setMotorSpeed(0.42);
+                bench2.setMotorSpeed(0.42);
             }
-            else if (gamepad1.y) {
-                targetRPM = 240;
-                double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
-                motor.setVelocity(ticksPerSecond);
-                motor1.setVelocity(ticksPerSecond);
+            if (gamepad1.left_bumper) {
+                bench1.setMotorSpeed(0.0);
+                bench2.setMotorSpeed(0.0);
             }
-            else if (gamepad1.b) {
-                targetRPM = 600;
-                double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
-                motor.setVelocity(ticksPerSecond);
-                motor1.setVelocity(ticksPerSecond);
+            if(gamepad1.left_trigger > 0.5) {
+                bench1.setMotorSpeed(0.38);
+                bench2.setMotorSpeed(0.38);
             }
-            else if (gamepad1.a) {
-                targetRPM = 0;
-                double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
-                motor.setVelocity(ticksPerSecond);
-                motor1.setVelocity(ticksPerSecond);
-            }
-            else if (gamepad1.left_bumper) {
-                targetRPM = 400.0;
-                //double ticksPerSecond = (targetRPM / 60.0) * TICKS_PER_REV;
-                intakeMotor.setPower(-1);
-            }
-            else if (gamepad1.right_bumper) {
-                intakeMotor.setPower(0);
-            }
- */
         }
     }
 }

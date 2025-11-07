@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -10,17 +10,16 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-@Autonomous(name="BlueTeam", group = "Concept")
 @Disabled
-
-public class BlueTeam extends LinearOpMode {
+@Autonomous(name="BlueTeam", group = "Concept")
+public class TestTag extends LinearOpMode {
 
     final double DESIRED_DISTANCE = 12.0; // inches
     final double SPEED_GAIN  = 0.02;
@@ -34,11 +33,14 @@ public class BlueTeam extends LinearOpMode {
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
 
     private static final boolean USE_WEBCAM = true;
-    private static final int DESIRED_TAG_ID = 20;   // ✅ Only look for tag ID 20
+    private static final int DESIRED_TAG_ID = 585;   // ✅ Only look for tag ID 585
 
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
     private AprilTagDetection desiredTag = null;
+
+    double left_motor = 0.0, right_motor = 0.0;
+    FlyWheel_Launch_SetPower launch = new FlyWheel_Launch_SetPower();
 
     @Override
     public void runOpMode() {
@@ -90,14 +92,21 @@ public class BlueTeam extends LinearOpMode {
                 turn   = Range.clip(-headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
                 strafe = Range.clip(yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
-                // Stop if close enough
+// Stop small rotation/strafe jitter when tag is centered
+                if (Math.abs(headingError) < 1.5) turn = 0;    // degrees threshold for alignment
+                if (Math.abs(yawError) < 1.0) strafe = 0;
+
+// Stop if close enough to tag
                 if (Math.abs(rangeError) < 2.0) {
                     drive = 0;
                     strafe = 0;
                     turn = 0;
                     telemetry.addData("Status", "At target distance");
-
+                    left_motor = 0.55;
+                    right_motor = 0.55;
+                    launch.setMotorSpeed(left_motor, right_motor);
                 }
+
 
             } else {
                 // Rotate to search for tag
@@ -112,7 +121,8 @@ public class BlueTeam extends LinearOpMode {
             telemetry.addData("Turn", "%.2f", turn);
             telemetry.update();
 
-            moveRobot(drive, turn, strafe);
+            moveRobot(drive, strafe, turn);
+
             sleep(10);
         }
     }

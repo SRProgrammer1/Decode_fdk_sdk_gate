@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.Kicker;
 
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
-@Disabled
+//@Disabled
 @TeleOp(name = "Teleop_intake_ramp_launch_kick", group = "TeleOp")
 public class Teleop_Intake_Ramp_Launch_Kicker extends OpMode {
 

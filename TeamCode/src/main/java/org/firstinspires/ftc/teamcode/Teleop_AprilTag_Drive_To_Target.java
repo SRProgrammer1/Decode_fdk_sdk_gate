@@ -29,7 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import android.util.Size;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -39,6 +40,11 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
+import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
+import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
+import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
+import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -85,12 +91,13 @@ import java.util.concurrent.TimeUnit;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  *
  */
-@Disabled
-@TeleOp(name="Omni Drive To AprilTag1", group = "Concept")
-public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
+
+@TeleOp(name="AprilTag_drive_to_Target", group = "Concept")
+//@Disabled
+public class Teleop_AprilTag_Drive_To_Target extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
-    final double DESIRED_DISTANCE = 12.0; //  this is how close the camera should get to the target (inches)
+    final double DESIRED_DISTANCE = 30.0; //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
@@ -99,9 +106,9 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
     final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
     final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
-    final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
-    final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
-    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
+    final double MAX_AUTO_SPEED = 0.2;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.2;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.2;   //  Clip the turn speed to this max value (adjust for your robot)
 
     private DcMotor frontLeftDrive = null;  //  Used to control the left front drive wheel
     private DcMotor frontRightDrive = null;  //  Used to control the right front drive wheel
@@ -114,6 +121,27 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
 
+
+
+    ServoBench kicker = new ServoBench();
+    MecanumDrive_Robot drive_r = new MecanumDrive_Robot();
+    FlyWheel_Launch_SetPower launch = new FlyWheel_Launch_SetPower();
+    Ramp_Servo servo = new Ramp_Servo();
+    intake_dcmotor intake_motor = new intake_dcmotor();
+    boolean lastButtonState = false;
+    boolean lastButtonState2 = false;
+    double forward, right, rotate;
+    double maxSpeed = 0.5;
+    double start_stop = 0.0;
+    double left_motor = 0.0, right_motor = 0.0;
+
+    boolean on_off = false;
+    boolean on_off2 = false;
+
+
+
+
+
     @Override public void runOpMode()
     {
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
@@ -121,10 +149,24 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
         double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
         double  turn            = 0;        // Desired turning power/speed (-1 to +1)
 
+
+        drive_r.init(hardwareMap);
+        launch.init(hardwareMap);
+        servo.init(hardwareMap);
+        intake_motor.init(hardwareMap);
+        kicker.init(hardwareMap);
+
+
+        telemetry.addData("Status", "Initialized");
+        if (!launch.isInitialized()) {
+            telemetry.addData("Warning", "Flywheel motors not found! Check configuration names.");
+        }
+        telemetry.update();
+
         // Initialize the Apriltag Detection process
         initAprilTag();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
+       /* // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must match the names assigned during the robot configuration.
         // step (using the FTC Robot Controller app on the phone).
         frontLeftDrive = hardwareMap.get(DcMotor.class, "f_l_dr");
@@ -138,7 +180,7 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);*/
 
         if (USE_WEBCAM)
             setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
@@ -151,6 +193,17 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
 
         while (opModeIsActive())
         {
+
+
+            boolean currentButtonState = gamepad2.a;
+            boolean currentButtonState2 = gamepad2.x;
+
+            forward = gamepad1.left_stick_y;
+            right = gamepad1.right_stick_x;
+            rotate = gamepad1.left_stick_x;
+
+
+
             targetFound = false;
             desiredTag  = null;
 
@@ -183,38 +236,102 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
                 telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
                 telemetry.addData("Yaw","%3.0f degrees", desiredTag.ftcPose.yaw);
             } else {
-                telemetry.addData("\n>","Drive using joysticks to find valid target\n");
+                // <<< ADDED: Auto rotate slowly if no tag found
+                drive = 0;
+                strafe = 1;
+                turn = 0; // rotate in place slowly to scan
+                drive_r.drive_robot(drive, strafe, turn, maxSpeed);
+
+                telemetry.addData("Searching", "Rotating to find tag...");
+
             }
 
             // If Left Bumper is being pressed, AND we have found the desired target, Drive to target Automatically .
-            if (targetFound) {
+            if (gamepad1.left_bumper && targetFound) {
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
                 double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
                 double  headingError    = desiredTag.ftcPose.bearing;
                 double  yawError        = desiredTag.ftcPose.yaw;
 
-                // Because the webcam faces backward (180° rotated),
-                // we invert forward/back and turning directions.
-                drive  = Range.clip(-rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn   = Range.clip(-headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                strafe = Range.clip(yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
-
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             } else {
 
                 // drive using manual POV Joystick mode.  Slow things down to make the robot more controlable.
-                drive  = gamepad1.left_stick_y  / 2.0;  // Reduce drive rate to 50%.
+                drive  = -gamepad1.left_stick_y  / 2.0;  // Reduce drive rate to 50%.
                 strafe = gamepad1.right_stick_x  / 2.0;  // Reduce strafe rate to 50%.
-                turn   = gamepad1.left_stick_x / 3.0;  // Reduce turn rate to 33%.
+                turn   = -gamepad1.left_stick_x / 3.0;  // Reduce turn rate to 33%.
                 telemetry.addData("Manual","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             }
             telemetry.update();
 
             // Apply desired axes motions to the drivetrain.
-            moveRobot(drive, strafe, turn);
+
+            drive_r.drive_robot(drive, strafe, turn, maxSpeed);
+
+           // moveRobot(drive, strafe, turn);
             sleep(10);
+
+            if(currentButtonState2 && !lastButtonState2) {
+                on_off2 = !on_off2;
+
+                if (on_off2) {
+                    start_stop = 1.0;
+                }
+                else {
+                    start_stop = 0.0;
+                    kicker.setServoRot(0.0);
+                }
+            }
+
+            if (currentButtonState && !lastButtonState) {
+                on_off = !on_off; // toggle state
+
+                if (on_off) {
+                    start_stop = 1.0;
+                    kicker.setServoRot(1.0);
+                } else {
+                    start_stop = 0.0;
+                    kicker.setServoRot(0.0);
+                }
+            }
+
+            intake_motor.setMotorSpeed_intake(start_stop);
+            servo.setServo_ramp(start_stop);
+
+            // Flywheel control
+            if (gamepad2.right_bumper) {
+                left_motor = 0.44;
+                right_motor = 0.44;
+            } else if (gamepad2.right_trigger > 0.5) {
+                left_motor = 0.40;
+                right_motor = 0.40;
+            } else if (gamepad2.left_trigger > 0.5) {
+                left_motor = 0.0;
+                right_motor = 0.0;
+            }
+
+            launch.setMotorSpeed(left_motor, right_motor);
+
+
+
+            // update for next loop
+            lastButtonState = currentButtonState;
+            lastButtonState2 = currentButtonState2;
+
+
+            // Debug feedback
+            telemetry.addData("Left Flywheel Power", left_motor);
+            telemetry.addData("Right Flywheel Power", right_motor);
+            telemetry.addData("Ramp/Intake Power", start_stop);
+            telemetry.addData("Speed Mode", maxSpeed);
+            telemetry.update();
+
         }
     }
 
@@ -227,7 +344,7 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
      * <p>
      * Positive Yaw is counter-clockwise
      */
-    public void moveRobot(double x, double y, double yaw) {
+    /*public void moveRobot(double x, double y, double yaw) {
         // Calculate wheel powers.
         double frontLeftPower    =  x - y - yaw;
         double frontRightPower   =  x + y + yaw;
@@ -240,10 +357,12 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
         max = Math.max(max, Math.abs(backRightPower));
 
         if (max > 1.0) {
+          //  max = 0.5;
             frontLeftPower /= max;
             frontRightPower /= max;
             backLeftPower /= max;
             backRightPower /= max;
+
         }
 
         // Send powers to the wheels.
@@ -251,7 +370,7 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
         frontRightDrive.setPower(frontRightPower);
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
-    }
+    }/*
 
     /**
      * Initialize the AprilTag processor.
@@ -273,6 +392,8 @@ public class RobotAutoDriveToAprilTagOmni_Test1 extends LinearOpMode
         if (USE_WEBCAM) {
             visionPortal = new VisionPortal.Builder()
                     .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .setCameraResolution(new Size(640, 480))
+                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                     .addProcessor(aprilTag)
                     .build();
         } else {

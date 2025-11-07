@@ -1,10 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
@@ -18,13 +17,12 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-
-
+@Autonomous(name="BlueTeam", group = "Concept")
 @Disabled
-@TeleOp(name="Auto Rotate and Drive to AprilTag", group = "Concept")
-public class RobotAutoDriveToAprilTagOmni_Test2 extends LinearOpMode {
 
-    final double DESIRED_DISTANCE = 12.0; // desired approach distance in inches
+public class BlueTeam extends LinearOpMode {
+
+    final double DESIRED_DISTANCE = 12.0; // inches
     final double SPEED_GAIN  = 0.02;
     final double STRAFE_GAIN = 0.015;
     final double TURN_GAIN   = 0.01;
@@ -36,7 +34,8 @@ public class RobotAutoDriveToAprilTagOmni_Test2 extends LinearOpMode {
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
 
     private static final boolean USE_WEBCAM = true;
-    private static final int DESIRED_TAG_ID = -1;
+    private static final int DESIRED_TAG_ID = 20;   // ✅ Only look for tag ID 20
+
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
     private AprilTagDetection desiredTag = null;
@@ -70,44 +69,42 @@ public class RobotAutoDriveToAprilTagOmni_Test2 extends LinearOpMode {
             targetFound = false;
             desiredTag = null;
 
+            // Scan for AprilTags
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();
             for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
-                    if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
-                        targetFound = true;
-                        desiredTag = detection;
-                        break;
-                    }
+                if (detection.metadata != null && detection.id == DESIRED_TAG_ID) {
+                    targetFound = true;
+                    desiredTag = detection;
+                    break;
                 }
             }
 
             if (targetFound) {
-                // Stop rotating if tag found
                 telemetry.addData("Tag Found", "ID %d", desiredTag.id);
 
                 double rangeError   = desiredTag.ftcPose.range - DESIRED_DISTANCE;
                 double headingError = desiredTag.ftcPose.bearing;
                 double yawError     = desiredTag.ftcPose.yaw;
 
-                // Move toward tag
                 drive  = Range.clip(-rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
                 turn   = Range.clip(-headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
                 strafe = Range.clip(yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 // Stop if close enough
-                if (Math.abs(rangeError) < 2.0) {  // within 2 inches
+                if (Math.abs(rangeError) < 2.0) {
                     drive = 0;
                     strafe = 0;
                     turn = 0;
                     telemetry.addData("Status", "At target distance");
+
                 }
 
             } else {
-                // <<< ADDED: Auto rotate slowly if no tag found
+                // Rotate to search for tag
                 drive = 0;
                 strafe = 0;
-                turn = 0.3; // rotate in place slowly to scan
-                telemetry.addData("Searching", "Rotating to find tag...");
+                turn = 0.3; // rotate in place slowly
+                telemetry.addData("Searching", "Rotating to find tag ID %d...", DESIRED_TAG_ID);
             }
 
             telemetry.addData("Drive", "%.2f", drive);
