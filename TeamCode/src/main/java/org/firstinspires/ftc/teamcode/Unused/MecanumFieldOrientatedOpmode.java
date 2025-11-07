@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -7,6 +8,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Field;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 
 @TeleOp
+@Disabled
 public class MecanumFieldOrientatedOpmode extends OpMode {
 
     MecanumDrive_Field drive = new MecanumDrive_Field();

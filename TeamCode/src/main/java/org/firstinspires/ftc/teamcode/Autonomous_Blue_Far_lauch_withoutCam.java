@@ -160,4 +160,34 @@ public class Autonomous_Blue_Far_lauch_withoutCam extends LinearOpMode {
 
         drive.drive_robot(0, 0, 0, 0);
     }
+
+    private void turnDegreesRight(double degrees, double speed) {
+        double turnCircumference = Math.PI * ROBOT_TRACK_WIDTH_INCHES;
+        double turnDistance = (degrees / 360.0) * turnCircumference;
+        int targetTicks = (int) (turnDistance * TICKS_PER_INCH);
+
+        // Reset encoders
+        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+
+        int avgTicks;
+        do {
+            drive.drive_robot(0, 1.0, 0, speed); // rotate left (negative rotation)
+            avgTicks = (Math.abs(drive.getFrontLeft().getCurrentPosition())
+                    + Math.abs(drive.getFrontRight().getCurrentPosition())
+                    + Math.abs(drive.getBackLeft().getCurrentPosition())
+                    + Math.abs(drive.getBackRight().getCurrentPosition())) / 4;
+            telemetry.addData("Turning ticks", "%d/%d", avgTicks, targetTicks);
+            telemetry.update();
+        } while (opModeIsActive() && avgTicks < targetTicks);
+
+        drive.drive_robot(0, 0, 0, 0);
+    }
 }
