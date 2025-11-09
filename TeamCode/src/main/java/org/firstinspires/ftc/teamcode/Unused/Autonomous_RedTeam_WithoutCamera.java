@@ -1,6 +1,7 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
@@ -9,8 +10,9 @@ import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
-@Autonomous(name = "Autonomous_BLUE_Drive_WithoutCAM", group = "Auto")
-public class Autonomous_BlueTeam_WithoutCamera extends LinearOpMode {
+@Autonomous(name = "Autonomous_RED_Drive_WithoutCAM", group = "Auto")
+@Disabled
+public class Autonomous_RedTeam_WithoutCamera extends LinearOpMode {
 
     private MecanumDrive_Robot drive = new MecanumDrive_Robot();
     private Ramp_Servo servo = new Ramp_Servo();
@@ -38,16 +40,16 @@ public class Autonomous_BlueTeam_WithoutCamera extends LinearOpMode {
 
         if (opModeIsActive()) {
             // === Step 1: Drive forward 72 inches (was backward) ===
-            driveDistance(-48, 0.3);
-            flywheel.setMotorSpeed(0.40, 0.40);
+            driveDistance(-42, 0.5);
+            sleep(500);
 
-
+            // === Step 2: Turn left 45 degrees (was right) ===
 
 
             // === Step 3: Start flywheels ===
             telemetry.addLine("Starting flywheels...");
             telemetry.update();
-
+            flywheel.setMotorSpeed(0.40, 0.40);
             sleep(4000);
 
             // === Step 4: Start intake + kicker + ramp ===
@@ -56,7 +58,7 @@ public class Autonomous_BlueTeam_WithoutCamera extends LinearOpMode {
             intake.setMotorSpeed_intake(1.0);
             kicker.setServoRot(1.0);
             servo.setServo_ramp(1.0);
-            sleep(5000);
+            sleep(8000);
 
             // === Step 5: Stop all mechanisms ===
             flywheel.setMotorSpeed(0.0, 0.0);
@@ -68,43 +70,29 @@ public class Autonomous_BlueTeam_WithoutCamera extends LinearOpMode {
             telemetry.update();
             sleep(500);
 
-            turnDegreesLeft(300, 0.4);
+            turnDegreesLeft(180, 0.4);
             sleep(500);
-
             // === Step 6: Drive backward 24 inches (was forward) ===
             intake.setMotorSpeed_intake(1.0);
             servo.setServo_ramp(1.0);
             driveDistance(-34, 0.4);
             sleep(500);
-            intake.setMotorSpeed_intake(0.0);
-            servo.setServo_ramp(0.0);
-            flywheel.setMotorSpeed(0.40, 0.40);
-            driveDistance(34, 0.5);
-            turnDegreesLeft(200, 0.3);
+            driveDistance(34, 0.4);
             sleep(500);
+            flywheel.setMotorSpeed(0.40, 0.40);
+            sleep(500);
+            turnDegreesLeft(320, 0.4);
             servo.setServo_ramp(1.0);
             intake.setMotorSpeed_intake(1.0);
             kicker.setServoRot(1.0);
-            sleep(5000);
-            servo.setServo_ramp(0.0);
-            intake.setMotorSpeed_intake(0.0);
-            kicker.setServoRot(0.0);
-            turnDegreesLeft(50, 0.5);
-            driveDistance(20, 0.5);
-            /* turnDegreesLeft(400, 0.5);
-            intake.setMotorSpeed_intake(1.0);
-            servo.setServo_ramp(1.0);
-            driveDistance(-33, 0.5);
-            sleep(500);
-            driveDistance(33, 0.5);
-            turnDegreesLeft(300, 0.5);
+            sleep(4500);
+            turnDegreesLeft(100, 0.4);
+            driveDistance(-24, 0.4);
 
 
 
             telemetry.addLine("Autonomous routine complete!");
             telemetry.update();
-
-             */
         }
     }
 

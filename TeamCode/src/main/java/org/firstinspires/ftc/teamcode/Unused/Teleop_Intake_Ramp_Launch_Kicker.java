@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -10,8 +10,9 @@ import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.Kicker;
 
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
-//@Disabled
+@Disabled
 @TeleOp(name = "Teleop_intake_ramp_launch_kick", group = "TeleOp")
+
 public class Teleop_Intake_Ramp_Launch_Kicker extends OpMode {
 
     MecanumDrive_Robot drive_r = new MecanumDrive_Robot();

@@ -25,8 +25,8 @@ public class FlyWheel_Launch_SetVelocity {
         motor2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         // Set directions opposite for mirror spinning
-        motor1.setDirection(DcMotorSimple.Direction.REVERSE);
-        motor2.setDirection(DcMotorSimple.Direction.FORWARD);
+        motor1.setDirection(DcMotorSimple.Direction.FORWARD);
+        motor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -40,7 +40,7 @@ public class FlyWheel_Launch_SetVelocity {
         Oscillations → lower P
         Slow response → increase P slightly */
 
-        PIDFCoefficients pidf = new PIDFCoefficients(0.05, 0.01, 0, 17.0);
+        PIDFCoefficients pidf = new PIDFCoefficients(0.05, 0.01, 0, 13.5);
         motor1.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidf);
         motor2.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidf);
     }
