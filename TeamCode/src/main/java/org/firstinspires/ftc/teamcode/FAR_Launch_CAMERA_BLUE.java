@@ -279,7 +279,7 @@ public class FAR_Launch_CAMERA_BLUE extends LinearOpMode
             sleep(10);
 
             if(stop_drive&&(!first_launch)) {
-               // sleep(2000);
+                sleep(6000);
 
 
                 // First Launch
