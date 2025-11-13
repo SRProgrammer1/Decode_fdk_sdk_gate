@@ -40,7 +40,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
@@ -92,9 +92,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="NearLaunch_LESS_Balls_BLUE_CAMERA", group = "Concept")
+@Autonomous(name="RED_NEAR_SIX_Camera_SetVelocity", group = "Concept")
 //@Disabled
-public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
+public class RED_NEAR_SIX_Camera_SetVelocity_Imp_Speed extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -108,16 +108,16 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-    final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-    final double STRAFE_GAIN =  0.035 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
-    final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    final double SPEED_GAIN  =  0.04  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.05 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    final double TURN_GAIN   =  0.015  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
-    final double MAX_AUTO_SPEED = 0.2;   //  Clip the approach speed to this max value (adjust for your robot)
-    final double MAX_AUTO_STRAFE= 0.2;   //  Clip the strafing speed to this max value (adjust for your robot)
-    final double MAX_AUTO_TURN  = 0.2;   //  Clip the turn speed to this max value (adjust for your robot)
+    final double MAX_AUTO_SPEED = 0.4;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.4;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int DESIRED_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -126,7 +126,8 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive = new MecanumDrive_Robot();
-    FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
+    double targetRPM = 1500;   // Launch power
+    private FlyWheel_Launch_SetVelocity flywheel = new FlyWheel_Launch_SetVelocity();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake = new intake_dcmotor();
     boolean lastButtonState = false;
@@ -163,9 +164,6 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
 
 
         telemetry.addData("Status", "Initialized");
-        if (!flywheel.isInitialized()) {
-            telemetry.addData("Warning", "Flywheel motors not found! Check configuration names.");
-        }
         telemetry.update();
 
         // Initialize the Apriltag Detection process
@@ -174,7 +172,7 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
 
 
         if (USE_WEBCAM)
-            setManualExposure(6, 250);  // Use low exposure time to reduce motion blur
+            setManualExposure(8, 250);  // Use low exposure time to reduce motion blur
 
         // Wait for driver to press start
         telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
@@ -183,7 +181,7 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
         waitForStart();
         driveDistance(-25, 0.6);
         sleep(500);
-        flywheel.setMotorSpeed(0.42, 0.42);
+        flywheel.setVelocityRPM(targetRPM);
 
         while (opModeIsActive())
         {
@@ -255,7 +253,7 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
                 strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 // Stop if close enough
-                if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0)) {  // within 2 inches
+                if ((Math.abs(rangeError) < 4.0)  & (Math.abs(headingError) < 5.0)) {  // within 2 inches
                     forward = 0;
                     strafe = 0;
                     turn = 0;
@@ -286,14 +284,13 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
                 servo.setServo_ramp(1.0);
                 sleep(4000);
                 // === Step 5: Stop all mechanisms ===
-                //flywheel.setMotorSpeed(0.0, 0.0);
                 intake.setMotorSpeed_intake(0);
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
                 // sleep(500);
-                turnDegreesRight(135, 0.4);
+                turnDegreesLeft(135, 0.4);
                 sleep(500);
-                strafeDegreesLeft(7,0.4);
+                strafeDegreesRight(6,0.4);
                 sleep(200);
                 //turnDegreesRight(15, 0.4);
                // sleep(200);
@@ -308,8 +305,8 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
                 intake.setMotorSpeed_intake(0.0);
                 servo.setServo_ramp(0.0);
                 //flywheel.setMotorSpeed(0.40, 0.40);
-                driveDistance(25, 0.4);
-                turnDegreesLeft(135, 0.3);
+                driveDistance(28, 0.4);
+                turnDegreesRight(135, 0.3);
                 sleep(300);
                 first_launch=true;
                 stop_drive = false;
@@ -320,14 +317,13 @@ public class NEAR_Launch_LESS_Balls_BLUE_CAMERA extends LinearOpMode
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
-                sleep(4000);
+                sleep(3000);
                 servo.setServo_ramp(0.0);
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
-                flywheel.setMotorSpeed(0.0, 0.0);
-
-                turnDegreesLeft(50, 0.5);
-                driveDistance(20, 0.5);
+                flywheel.setVelocityRPM(0);
+                turnDegreesRight(50, 0.5);
+                driveDistance(10, 0.5);
                 stop_drive = false;   // set flag false
 
             }

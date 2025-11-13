@@ -6,10 +6,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+
 public class FlyWheel_Launch_SetVelocity {
 
     private DcMotorEx motor1, motor2;
-    private static final double TICKS_PER_REV = 28.0;
+    private static final double TICKS_PER_REV = 25.0;
 
     public double getMotor1Velocity() { return motor1.getVelocity(); }
     public double getMotor2Velocity() { return motor2.getVelocity(); }
@@ -40,13 +41,14 @@ public class FlyWheel_Launch_SetVelocity {
         Oscillations → lower P
         Slow response → increase P slightly */
 
-        PIDFCoefficients pidf = new PIDFCoefficients(0.05, 0.01, 0, 13.5);
+        PIDFCoefficients pidf = new PIDFCoefficients(8.0, 0.0, 1.0, 0.0);
+
         motor1.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidf);
         motor2.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidf);
     }
 
     /** Set motor RPM (mirror image achieved by opposite directions) */
-    public void setMotorRPM(double rpm) {
+    public void setVelocityRPM(double rpm) {
         double velocity = rpmToTicksPerSecond(rpm);
         motor1.setVelocity(velocity);
         motor2.setVelocity(velocity); // same velocity, direction handles mirroring

@@ -40,7 +40,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
@@ -92,9 +92,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="NearLaunch_MORE_Balls_RED_CAMERA", group = "Concept")
+@Autonomous(name="RED_NEAR_NINE_Camera_SetVelocity", group = "Concept")
 //@Disabled
-public class NEAR_Launch_MORE_Balls_RED_CAMERA extends LinearOpMode
+public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -126,7 +126,8 @@ public class NEAR_Launch_MORE_Balls_RED_CAMERA extends LinearOpMode
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive = new MecanumDrive_Robot();
-    FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
+    double targetRPM = 1500;   // Launch power
+    private FlyWheel_Launch_SetVelocity flywheel = new FlyWheel_Launch_SetVelocity();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake = new intake_dcmotor();
     boolean lastButtonState = false;
@@ -163,9 +164,6 @@ public class NEAR_Launch_MORE_Balls_RED_CAMERA extends LinearOpMode
 
 
         telemetry.addData("Status", "Initialized");
-        if (!flywheel.isInitialized()) {
-            telemetry.addData("Warning", "Flywheel motors not found! Check configuration names.");
-        }
         telemetry.update();
 
         // Initialize the Apriltag Detection process
@@ -183,7 +181,7 @@ public class NEAR_Launch_MORE_Balls_RED_CAMERA extends LinearOpMode
         waitForStart();
         driveDistance(-25, 0.6);
         sleep(500);
-        flywheel.setMotorSpeed(0.42, 0.42);
+        flywheel.setVelocityRPM(targetRPM);
 
         while (opModeIsActive())
         {
@@ -256,6 +254,7 @@ public class NEAR_Launch_MORE_Balls_RED_CAMERA extends LinearOpMode
 
                 // Stop if close enough
                 if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0)) {  // within 2 inches
+                    //if ((Math.abs(rangeError) < 3.0) ) {  // within 2 inches
                     forward = 0;
                     strafe = 0;
                     turn = 0;
@@ -284,16 +283,15 @@ public class NEAR_Launch_MORE_Balls_RED_CAMERA extends LinearOpMode
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
                 servo.setServo_ramp(1.0);
-                sleep(4000);
+                sleep(5000);
                 // === Step 5: Stop all mechanisms ===
-                //flywheel.setMotorSpeed(0.0, 0.0);
                 intake.setMotorSpeed_intake(0);
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
                 // sleep(500);
                 turnDegreesLeft(135, 0.4);
                 sleep(500);
-                strafeDegreesRight(8,0.4);
+                strafeDegreesRight(9,0.4);
                 sleep(200);
                 //turnDegreesRight(15, 0.4);
                // sleep(200);
@@ -307,7 +305,6 @@ public class NEAR_Launch_MORE_Balls_RED_CAMERA extends LinearOpMode
                 sleep(300);
                 intake.setMotorSpeed_intake(0.0);
                 servo.setServo_ramp(0.0);
-                //flywheel.setMotorSpeed(0.40, 0.40);
                 driveDistance(25, 0.4);
                 turnDegreesRight(135, 0.3);
                 sleep(300);
@@ -320,15 +317,15 @@ public class NEAR_Launch_MORE_Balls_RED_CAMERA extends LinearOpMode
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
-                sleep(3000);
+                sleep(4500);
                 servo.setServo_ramp(0.0);
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
-                flywheel.setMotorSpeed(0.0, 0.0);
+                flywheel.setVelocityRPM(0);
                 turnDegreesLeft(135, 0.4);
                 sleep(300);
 // === Step 6: Drive backward 24 inches (was forward) ===
-                strafeDegreesRight(21,0.4);
+                strafeDegreesRight(29,0.4);
                 sleep(300);
                 turnDegreesRight(12, 0.4);
                 intake.setMotorSpeed_intake(1.0);

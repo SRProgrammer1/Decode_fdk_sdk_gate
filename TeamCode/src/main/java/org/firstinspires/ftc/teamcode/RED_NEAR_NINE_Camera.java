@@ -92,9 +92,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="NearLaunch_MORE_Balls_BLUE_CAMERA", group = "Concept")
+@Autonomous(name="RED_NEAR_NINE_Camera", group = "Concept")
 //@Disabled
-public class NEAR_Launch_MORE_Balls_BLUE_CAMERA extends LinearOpMode
+public class RED_NEAR_NINE_Camera extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -117,7 +117,7 @@ public class NEAR_Launch_MORE_Balls_BLUE_CAMERA extends LinearOpMode
     final double MAX_AUTO_TURN  = 0.2;   //  Clip the turn speed to this max value (adjust for your robot)
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int DESIRED_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -256,6 +256,7 @@ public class NEAR_Launch_MORE_Balls_BLUE_CAMERA extends LinearOpMode
 
                 // Stop if close enough
                 if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0)) {  // within 2 inches
+                    //if ((Math.abs(rangeError) < 3.0) ) {  // within 2 inches
                     forward = 0;
                     strafe = 0;
                     turn = 0;
@@ -284,16 +285,16 @@ public class NEAR_Launch_MORE_Balls_BLUE_CAMERA extends LinearOpMode
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
                 servo.setServo_ramp(1.0);
-                sleep(4300);
+                sleep(5000);
                 // === Step 5: Stop all mechanisms ===
                 //flywheel.setMotorSpeed(0.0, 0.0);
                 intake.setMotorSpeed_intake(0);
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
                 // sleep(500);
-                turnDegreesRight(135, 0.4);
-                sleep(300);
-                strafeDegreesLeft(7,0.4);
+                turnDegreesLeft(135, 0.4);
+                sleep(500);
+                strafeDegreesRight(9,0.4);
                 sleep(200);
                 //turnDegreesRight(15, 0.4);
                // sleep(200);
@@ -309,7 +310,7 @@ public class NEAR_Launch_MORE_Balls_BLUE_CAMERA extends LinearOpMode
                 servo.setServo_ramp(0.0);
                 //flywheel.setMotorSpeed(0.40, 0.40);
                 driveDistance(25, 0.4);
-                turnDegreesLeft(135, 0.3);
+                turnDegreesRight(135, 0.3);
                 sleep(300);
                 first_launch=true;
                 stop_drive = false;
@@ -320,22 +321,22 @@ public class NEAR_Launch_MORE_Balls_BLUE_CAMERA extends LinearOpMode
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
-                sleep(3300);
+                sleep(4500);
                 servo.setServo_ramp(0.0);
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
                 flywheel.setMotorSpeed(0.0, 0.0);
-                turnDegreesRight(135, 0.4);
+                turnDegreesLeft(135, 0.4);
                 sleep(300);
 // === Step 6: Drive backward 24 inches (was forward) ===
-                strafeDegreesLeft(29,0.4);
+                strafeDegreesRight(29,0.4);
                 sleep(300);
-                turnDegreesLeft(6, 0.4);
+                turnDegreesRight(12, 0.4);
                 intake.setMotorSpeed_intake(1.0);
                 servo.setServo_ramp(1.0);
                 //strafeDegreesLeft(80, 0.4);
                 //sleep(500);
-                driveDistance(-24, 0.25);
+                driveDistance(-20, 0.25);
                 //sleep(500);
 
                 stop_drive = false;

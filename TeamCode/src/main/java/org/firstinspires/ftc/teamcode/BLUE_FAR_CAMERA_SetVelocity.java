@@ -41,7 +41,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
@@ -93,9 +93,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="FAR_Launch_WithCamera_RED", group = "Concept")
+@Autonomous(name="BLUE_FAR_CAMERA_SetVelocity", group = "Concept")
 @Disabled
-public class FAR_Launch_CAMERA_RED extends LinearOpMode
+public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -104,9 +104,11 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
     static final double TICKS_PER_INCH = TICKS_PER_REV / (Math.PI * WHEEL_DIAMETER_INCHES);
     static final double ROBOT_TRACK_WIDTH_INCHES = 15.0;
     final double DESIRED_DISTANCE = 120.0; //  this is how close the camera should get to the target (inches)
-    double TARGET_YAW = 31.0; // in degrees
+    double TARGET_YAW = -31.0; // in degrees
 
     double TARGET_TURN = 10; //in degrees
+
+
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
@@ -119,7 +121,7 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
     final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int DESIRED_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -128,7 +130,9 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive = new MecanumDrive_Robot();
-    FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
+    double targetRPM = 3000;   // Launch power
+
+    FlyWheel_Launch_SetVelocity flywheel = new FlyWheel_Launch_SetVelocity();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake = new intake_dcmotor();
     boolean lastButtonState = false;
@@ -143,6 +147,7 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
 
     boolean stop_drive = false;
     boolean first_launch = false;
+
 
 
     @Override public void runOpMode()
@@ -161,9 +166,6 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
 
 
         telemetry.addData("Status", "Initialized");
-        if (!flywheel.isInitialized()) {
-            telemetry.addData("Warning", "Flywheel motors not found! Check configuration names.");
-        }
         telemetry.update();
 
         // Initialize the Apriltag Detection process
@@ -179,9 +181,9 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
         telemetry.addData(">", "Touch START to start OpMode");
         telemetry.update();
         waitForStart();
-        //driveDistance(-68, 0.5);
-        sleep(1500);
-        flywheel.setMotorSpeed(0.52, 0.52);
+        //driveDistance(-68, 0.3);
+        //sleep(1500);
+        flywheel.setVelocityRPM(targetRPM);
 
         while (opModeIsActive())
         {
@@ -189,6 +191,7 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
 
             boolean currentButtonState = gamepad2.a;
             boolean currentButtonState2 = gamepad2.x;
+
 
             forward = gamepad1.left_stick_y;
             right = gamepad1.right_stick_x;
@@ -198,6 +201,7 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
 
             targetFound = false;
             desiredTag  = null;
+
 
 
             // Step through the list of detected tags and look for a matching tag
@@ -229,11 +233,6 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
                 telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
                 telemetry.addData("Yaw","%3.0f degrees", desiredTag.ftcPose.yaw);
             } else {
-                // <<< ADDED: Auto rotate slowly if no tag found
-               /* forward = 0;
-                strafe = 1;
-                turn = 0; // rotate in place slowly to scan
-                drive.drive_robot(forward, strafe, turn, maxSpeed);*/
 
                 telemetry.addData("Searching", "Rotating to find tag...");
 
@@ -245,28 +244,22 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
                 double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
                 double  headingError    = desiredTag.ftcPose.bearing;
-                double  yawError        = desiredTag.ftcPose.yaw;
+                double  yawError        = desiredTag.ftcPose.yaw - TARGET_YAW;
 
-                //Set flag "stop_drive" after reaching target
-                double  rangeTolerance = 1.0; //inches
-                double headingTolerance = 3.0; //degrees
-                double yawTolerance = 3.0; //degrees
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                forward  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
-                boolean reachedTarget = Math.abs(rangeError) < rangeTolerance && Math.abs(headingError) < headingTolerance &&  Math.abs(yawError) < yawTolerance;
-
-                if(reachedTarget) {
+                // Stop if close enough
+                if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0) & (Math.abs(yawError) < 3.0)) {  // within 2 inches
                     forward = 0;
                     strafe = 0;
                     turn = 0;
                     stop_drive = true;
                     telemetry.addData("Status", "At target distance");
-                }else {
-                    // Use the speed and turn "gains" to calculate how we want the robot to move.
-                    forward = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                    turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                    strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
-                    telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", forward, strafe, turn);
                 }
+                telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", forward, strafe, turn);
             } else {
 
                 // drive using manual POV Joystick mode.  Slow things down to make the robot more controlable.
@@ -285,51 +278,55 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
             sleep(10);
 
             if(stop_drive&&(!first_launch)) {
-
-                //First launch
                 sleep(6000);
+
+
+                // First Launch
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
                 servo.setServo_ramp(1.0);
                 sleep(6000);
 
-
-
                 // === Step 5: Stop all mechanisms ===
                 //flywheel.setMotorSpeed(0.0, 0.0);
+
                 intake.setMotorSpeed_intake(0);
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
                 sleep(500);
 
 
-                //Go to intake 3 balls
-
-                driveDistance(12, 0.4);
+                telemetry.addLine("Shooting complete. Moving forward and rotating towards intake...");
+                telemetry.update();
                 sleep(500);
+                driveDistance(10, 0.4);
+                turnDegreesLeft(280, 0.4);
+                sleep(500);
+
+                // Intake 3 balls
+
                 intake.setMotorSpeed_intake(1.0);
                 servo.setServo_ramp(1.0);
                 driveDistance(-25, 0.25);
                 sleep(500);
 
-                // comeback to previous location
+                //Drive back and to the original location to shoot
 
-                driveDistance(22, 0.4);
+                driveDistance(17, 0.4);
                 // sleep(500);
                 //flywheel.setMotorSpeed(0.40, 0.40);
                 // sleep(500);
-                turnDegreesRight(130, 0.4);
+                turnDegreesLeft(110, 0.4);
                 driveDistance(-12, 0.4);
-                sleep(500);
+
                 first_launch=true;
                 stop_drive = false;
-
             }
 
             // Second launch
 
-            if(first_launch&&stop_drive)
-            {
+                if(first_launch&&stop_drive)
+                {
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
@@ -337,19 +334,17 @@ public class FAR_Launch_CAMERA_RED extends LinearOpMode
                 driveDistance(14, 0.4);
 
                 //Stop all mechanisms
-                servo.setServo_ramp(0.0);
-                intake.setMotorSpeed_intake(0.0);
-                kicker.setServoRot(0.0);
-                flywheel.setMotorSpeed(0.0, 0.0);
+                    servo.setServo_ramp(0.0);
+                    intake.setMotorSpeed_intake(0.0);
+                    kicker.setServoRot(0.0);
+                    flywheel.setVelocityRPM(0);
 
                 telemetry.addLine("Autonomous routine complete!");
                 telemetry.update();
-
                 stop_drive = false;   // set flag false
-                first_launch = false;
+                    first_launch = false;
 
-
-            }
+                }
 
 
         }

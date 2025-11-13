@@ -1,14 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
-//@Disabled
-@TeleOp(name = "SetVelocity Launch", group = "TeleOp")
-public class SetVelocity_Launch extends OpMode {
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity_Debug;
 
-    FlyWheel_Launch_SetVelocity launch = new FlyWheel_Launch_SetVelocity();
+@TeleOp(name = "SetVelocity Launch test", group = "TeleOp")
+public class SetVelocity_Launch_test extends OpMode {
+
+    FlyWheel_Launch_SetVelocity_Debug launch = new FlyWheel_Launch_SetVelocity_Debug();
     double targetRPM = 0;
 
     @Override
@@ -20,19 +19,21 @@ public class SetVelocity_Launch extends OpMode {
 
     @Override
     public void loop() {
+        // Choose base target RPM
         if (gamepad1.right_bumper) {
-            targetRPM = 6000;
-        } else if (gamepad1.right_trigger > 0.5) {
             targetRPM = 3000;
+        } else if (gamepad1.right_trigger > 0.5) {
+            targetRPM = 2000;
         } else if (gamepad1.left_bumper) {
-            targetRPM = 1500;
+            targetRPM = 1000;
         } else if (gamepad1.left_trigger > 0.5) {
             targetRPM = 0;
         }
 
-        // Apply target RPM (motor2 will spin opposite automatically)
-        launch.setVelocityRPM(targetRPM);
+        // Use the stabilizing version instead of raw setVelocity
+        launch.stabilizeVelocity(targetRPM);
 
+        telemetry.addData("Battery", launch.getBatteryVoltage());
         telemetry.addData("Target RPM", targetRPM);
         telemetry.addData("Motor1 Velocity", launch.getMotor1Velocity());
         telemetry.addData("Motor2 Velocity", launch.getMotor2Velocity());

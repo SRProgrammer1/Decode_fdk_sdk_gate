@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
 @TeleOp(name = "TeleOp", group = "TeleOp")
-public class Intake_Ramp_Launch extends OpMode {
+public class Teleop_Intake_Ramp_Launch extends OpMode {
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive_r = new MecanumDrive_Robot();
