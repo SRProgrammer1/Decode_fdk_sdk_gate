@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
-@TeleOp(name = "TeleOp_SetVelocity", group = "TeleOp")
-public class Teleop_SetVelocity extends OpMode {
+@TeleOp(name = "TeleOp_SetVelocity_AdjustLaunch", group = "TeleOp")
+public class Teleop_SetVelocity_AdjustLaunch extends OpMode {
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive_r = new MecanumDrive_Robot();
@@ -26,7 +26,8 @@ public class Teleop_SetVelocity extends OpMode {
 
     boolean on_off = false;
     boolean on_off2 = false;
-
+    boolean yWasPressed = false;
+    boolean bWasPressed = false;
     @Override
     public void init() {
         drive_r.init(hardwareMap);
@@ -80,6 +81,18 @@ public class Teleop_SetVelocity extends OpMode {
 
         intake_motor.setMotorSpeed_intake(start_stop);
         servo.setServo_ramp(start_stop);
+
+// Y = 20 RPM once
+        if (gamepad1.y && !yWasPressed) {
+            launcher_Speed += 20;
+        }
+        yWasPressed = gamepad1.y;
+
+// B = -20 RPM once
+        if (gamepad1.b && !bWasPressed) {
+            launcher_Speed -= 20;
+        }
+        bWasPressed = gamepad1.b;
 
         // Flywheel control
         if (gamepad2.right_bumper) {
