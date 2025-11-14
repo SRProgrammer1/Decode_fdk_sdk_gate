@@ -38,8 +38,6 @@ public class SetVelocity_Launch_Battery1 extends OpMode {
         kicker.init(hardwareMap);
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
-
-
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -50,8 +48,13 @@ public class SetVelocity_Launch_Battery1 extends OpMode {
             // Map normal RPM to reduced high-voltage RPM
             if (normalRPM == 1200) return 960;
             if (normalRPM == 1100) return 900;
-            if (normalRPM == 900)  return 780;
+            if (normalRPM == 900) return 780;
+        } else if (voltage > 12.0){
+            if (normalRPM == 1200) return 1100;
+            if (normalRPM == 1100) return 1000;
+            if (normalRPM == 900) return 800;
         }
+
         return normalRPM;
     }
 
@@ -110,7 +113,6 @@ public class SetVelocity_Launch_Battery1 extends OpMode {
         launch.setVelocityRPM(targetRPM);
 
         telemetry.addData("Battery Voltage", "%.2f V", voltage);
-
         telemetry.addData("Target RPM", targetRPM);
         telemetry.addData("Motor1 Velocity", launch.getMotor1Velocity());
         telemetry.addData("Motor2 Velocity", launch.getMotor2Velocity());
