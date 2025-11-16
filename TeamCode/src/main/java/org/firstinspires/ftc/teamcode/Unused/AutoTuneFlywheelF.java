@@ -1,13 +1,14 @@
 // AutoTuneFlywheelF.java
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 @Autonomous(name="AutoTune Flywheel F", group="tuning")
+@Disabled
 public class AutoTuneFlywheelF extends LinearOpMode {
 
     private DcMotorEx m1, m2;

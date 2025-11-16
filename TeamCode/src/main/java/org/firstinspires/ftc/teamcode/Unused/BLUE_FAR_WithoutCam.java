@@ -1,23 +1,23 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity_test;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
-@Autonomous(name = "BLUE_FAR_WithoutCam_SetVelocity", group = "Auto")
-public class BLUE_FAR_WithoutCam_SetVelocity extends LinearOpMode {
+@Autonomous(name = "BLUE_FAR_WithoutCam", group = "Auto")
+@Disabled
+public class BLUE_FAR_WithoutCam extends LinearOpMode {
 
     private MecanumDrive_Robot drive = new MecanumDrive_Robot();
     private Ramp_Servo servo = new Ramp_Servo();
-    double targetRPM = 2200;   // Launch power
-    private FlyWheel_Launch_SetVelocity_test flywheel = new FlyWheel_Launch_SetVelocity_test();
+    private FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
     private intake_dcmotor intake = new intake_dcmotor();
     private ServoBench kicker = new ServoBench();
 
@@ -25,7 +25,6 @@ public class BLUE_FAR_WithoutCam_SetVelocity extends LinearOpMode {
     static final double WHEEL_DIAMETER_INCHES = 3.0;
     static final double TICKS_PER_INCH = TICKS_PER_REV / (Math.PI * WHEEL_DIAMETER_INCHES);
     static final double ROBOT_TRACK_WIDTH_INCHES = 15.0;
-
 
     @Override
     public void runOpMode() {
@@ -51,15 +50,15 @@ public class BLUE_FAR_WithoutCam_SetVelocity extends LinearOpMode {
             // === Step 3: Start flywheels ===
             telemetry.addLine("Starting flywheels...");
             telemetry.update();
-            flywheel.setVelocityRPM(targetRPM);
-            sleep(4000);
+            flywheel.setMotorSpeed(0.50, 0.50);
+            sleep(5000);
 
             // === Step 4: Start intake + kicker + ramp ===
             telemetry.addLine("Starting intake and kicker...");
             telemetry.update();
             //Launch
             intake.setMotorSpeed_intake(1.0);
-            kicker.setServoRot(0.25);
+            kicker.setServoRot(1.0);
             servo.setServo_ramp(1.0);
             sleep(8000);
 
@@ -85,26 +84,26 @@ public class BLUE_FAR_WithoutCam_SetVelocity extends LinearOpMode {
             servo.setServo_ramp(1.0);
             driveDistance(-26, 0.25);
             sleep(500);
-            //driveDistance(20, 0.4);
+            driveDistance(20, 0.4);
 
-            driveDistance(26, 0.4);
+            /*driveDistance(26, 0.4);
             turnDegreesLeft(120, 0.4);
-            driveDistance(-13, 0.4);
+            driveDistance(-9, 0.4);
 
 
 
             servo.setServo_ramp(1.0);
-            intake.setMotorSpeed_intake(0.25);
+            intake.setMotorSpeed_intake(1.0);
             kicker.setServoRot(1.0);
-            sleep(5000);
+            sleep(4500);
 
-            driveDistance(14, 0.4);
+            driveDistance(14, 0.4);*/
 
             //Stop all mechanisms
             servo.setServo_ramp(0.0);
             intake.setMotorSpeed_intake(0.0);
             kicker.setServoRot(0.0);
-            flywheel.setVelocityRPM(0);
+            flywheel.setMotorSpeed(0.0, 0.0);
 
             telemetry.addLine("Autonomous routine complete!");
             telemetry.update();
@@ -117,15 +116,15 @@ public class BLUE_FAR_WithoutCam_SetVelocity extends LinearOpMode {
         int targetTicks = (int) (Math.abs(inches) * TICKS_PER_INCH);
 
         // Reset encoders
-        drive.getFrontLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getFrontRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        drive.getFrontLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getFrontRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
 
         double direction = inches > 0 ? 1.0 : -1.0;
 
@@ -148,15 +147,15 @@ public class BLUE_FAR_WithoutCam_SetVelocity extends LinearOpMode {
         int targetTicks = (int) (turnDistance * TICKS_PER_INCH);
 
         // Reset encoders
-        drive.getFrontLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getFrontRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        drive.getFrontLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getFrontRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
 
         int avgTicks;
         do {
@@ -177,15 +176,15 @@ public class BLUE_FAR_WithoutCam_SetVelocity extends LinearOpMode {
         int targetTicks = (int) (turnDistance * TICKS_PER_INCH);
 
         // Reset encoders
-        drive.getFrontLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getFrontRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        drive.getFrontLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getFrontRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
 
         int avgTicks;
         do {

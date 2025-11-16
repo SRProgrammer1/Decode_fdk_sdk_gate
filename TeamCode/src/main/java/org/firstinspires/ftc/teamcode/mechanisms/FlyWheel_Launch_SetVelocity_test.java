@@ -10,9 +10,10 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class FlyWheel_Launch_SetVelocity_test {
 
     private DcMotorEx motor1, motor2;
-    private static final double TICKS_PER_REV = 7.0;
+    private static final double TICKS_PER_REV = 28.0;
 
     public double getMotor1Velocity() { return motor1.getVelocity(); }
+    public double getMotor1Position() { return motor1.getCurrentPosition(); }
     public double getMotor2Velocity() { return motor2.getVelocity(); }
 
     public void init(HardwareMap hwMap) {
@@ -41,7 +42,9 @@ public class FlyWheel_Launch_SetVelocity_test {
         Oscillations → lower P
         Slow response → increase P slightly */
 
-        PIDFCoefficients pidf = new PIDFCoefficients(8.0, 0.0, 1.0, 45.81);
+        // 1300 f*1300
+
+        PIDFCoefficients pidf = new PIDFCoefficients(2, 0.0, 2, 10);
 
         motor1.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidf);
         motor2.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidf);

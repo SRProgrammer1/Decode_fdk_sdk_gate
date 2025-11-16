@@ -1,6 +1,7 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
 @Autonomous(name = "RED_FAR_WithoutCam", group = "Auto")
+@Disabled
 public class RED_FAR_WithoutCam extends LinearOpMode {
 
     private MecanumDrive_Robot drive = new MecanumDrive_Robot();

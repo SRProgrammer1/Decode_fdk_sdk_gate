@@ -32,16 +32,16 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
@@ -93,9 +93,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="BLUE_FAR_CAMERA_SetVelocity", group = "Concept")
-@Disabled
-public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
+@Autonomous(name="BLUE_NEAR_NINE_Camera_Flywheel", group = "Concept")
+//@Disabled
+public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -103,22 +103,28 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
     static final double WHEEL_DIAMETER_INCHES = 3;
     static final double TICKS_PER_INCH = TICKS_PER_REV / (Math.PI * WHEEL_DIAMETER_INCHES);
     static final double ROBOT_TRACK_WIDTH_INCHES = 15.0;
-    final double DESIRED_DISTANCE = 120.0; //  this is how close the camera should get to the target (inches)
-    double TARGET_YAW = -31.0; // in degrees
-
-    double TARGET_TURN = 10; //in degrees
-
+    final double DESIRED_DISTANCE = 55;
+    //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-    final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-    final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+
+   /* final double SPEED_GAIN  =  0.04  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.05 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    final double TURN_GAIN   =  0.015  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+
+    final double MAX_AUTO_SPEED = 0.4;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.4;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)*/
+
+   final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.035 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
     final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
-    final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
-    final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
-    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
+    final double MAX_AUTO_SPEED = 0.2;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.2;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.2;   //  Clip the turn speed to this max value (adjust for your robot)
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
     private static final int DESIRED_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
@@ -130,15 +136,13 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive = new MecanumDrive_Robot();
-    double targetRPM = 3000;   // Launch power
-
-    FlyWheel_Launch_SetVelocity flywheel = new FlyWheel_Launch_SetVelocity();
+    FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake = new intake_dcmotor();
     boolean lastButtonState = false;
     boolean lastButtonState2 = false;
     double forward, right, rotate;
-    double maxSpeed = 0.5;
+    double maxSpeed = 0.6;
     double start_stop = 0.0;
     double left_motor = 0.0, right_motor = 0.0;
 
@@ -147,7 +151,23 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
 
     boolean stop_drive = false;
     boolean first_launch = false;
+    boolean second_launch = false;
+    double voltage = 0;
+    private VoltageSensor batteryVoltageSensor;
 
+    private void rpmForHighVoltage() {
+        if(voltage > 13.5){
+            flywheel.setMotorSpeed(0.36, 0.36);
+        }
+        else if ((voltage > 13.0) && (voltage < 13.5)){
+            flywheel.setMotorSpeed(0.37, 0.37);
+        } else if ((voltage > 12.5) && (voltage < 13.0)){
+            flywheel.setMotorSpeed(0.40, 0.40);
+        }
+        else{
+            flywheel.setMotorSpeed(0.42, 0.42);
+        }
+    }
 
 
     @Override public void runOpMode()
@@ -163,8 +183,11 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
         intake.init(hardwareMap);
         kicker.init(hardwareMap);
 
+        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
+        voltage = batteryVoltageSensor.getVoltage();
 
 
+        telemetry.addData("Battery Voltage", "%.2f V", voltage);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -181,17 +204,15 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
         telemetry.addData(">", "Touch START to start OpMode");
         telemetry.update();
         waitForStart();
-        //driveDistance(-68, 0.3);
-        //sleep(1500);
-        flywheel.setVelocityRPM(targetRPM);
-
+        driveDistance(-25, 0.6);
+        sleep(500);
+        rpmForHighVoltage();
         while (opModeIsActive())
         {
 
 
             boolean currentButtonState = gamepad2.a;
             boolean currentButtonState2 = gamepad2.x;
-
 
             forward = gamepad1.left_stick_y;
             right = gamepad1.right_stick_x;
@@ -201,7 +222,6 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
 
             targetFound = false;
             desiredTag  = null;
-
 
 
             // Step through the list of detected tags and look for a matching tag
@@ -227,12 +247,18 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
 
             // Tell the driver what we see, and what to do.
             if (targetFound) {
+                telemetry.addData("Battery Voltage", "%.2f V", voltage);
                 telemetry.addData("\n>","HOLD Left-Bumper to Drive to Target\n");
                 telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
                 telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
                 telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
                 telemetry.addData("Yaw","%3.0f degrees", desiredTag.ftcPose.yaw);
             } else {
+                // <<< ADDED: Auto rotate slowly if no tag found
+               /* forward = 0;
+                strafe = 1;
+                turn = 0; // rotate in place slowly to scan
+                drive.drive_robot(forward, strafe, turn, maxSpeed);*/
 
                 telemetry.addData("Searching", "Rotating to find tag...");
 
@@ -244,7 +270,7 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
                 double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
                 double  headingError    = desiredTag.ftcPose.bearing;
-                double  yawError        = desiredTag.ftcPose.yaw - TARGET_YAW;
+                double  yawError        = desiredTag.ftcPose.yaw;
 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.
                 forward  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
@@ -252,7 +278,7 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
                 strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 // Stop if close enough
-                if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0) & (Math.abs(yawError) < 3.0)) {  // within 2 inches
+                if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0)) {  // within 2 inches
                     forward = 0;
                     strafe = 0;
                     turn = 0;
@@ -278,74 +304,67 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
             sleep(10);
 
             if(stop_drive&&(!first_launch)) {
-                sleep(6000);
-
-
-                // First Launch
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
                 servo.setServo_ramp(1.0);
                 sleep(6000);
-
                 // === Step 5: Stop all mechanisms ===
                 //flywheel.setMotorSpeed(0.0, 0.0);
-
                 intake.setMotorSpeed_intake(0);
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
-                sleep(500);
+                // sleep(500);
+                turnDegreesRight(135, 0.4);
+                sleep(300);
+                strafeDegreesLeft(7,0.4);
+                sleep(200);
+                //turnDegreesRight(15, 0.4);
+               // sleep(200);
 
-
-                telemetry.addLine("Shooting complete. Moving forward and rotating towards intake...");
-                telemetry.update();
-                sleep(500);
-                driveDistance(10, 0.4);
-                turnDegreesLeft(280, 0.4);
-                sleep(500);
-
-                // Intake 3 balls
-
+// === Step 6: Drive backward 24 inches (was forward) ===
                 intake.setMotorSpeed_intake(1.0);
                 servo.setServo_ramp(1.0);
+                //strafeDegreesLeft(80, 0.4);
+                //sleep(500);
                 driveDistance(-25, 0.25);
-                sleep(500);
-
-                //Drive back and to the original location to shoot
-
-                driveDistance(17, 0.4);
-                // sleep(500);
+                sleep(300);
+                intake.setMotorSpeed_intake(0.0);
+                servo.setServo_ramp(0.0);
                 //flywheel.setMotorSpeed(0.40, 0.40);
-                // sleep(500);
-                turnDegreesLeft(110, 0.4);
-                driveDistance(-12, 0.4);
-
+                driveDistance(25, 0.4);
+                turnDegreesLeft(135, 0.3);
+                sleep(300);
                 first_launch=true;
                 stop_drive = false;
             }
 
-            // Second launch
-
-                if(first_launch&&stop_drive)
-                {
+            if(first_launch&&stop_drive)
+            {
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
-                sleep(5000);
-                driveDistance(14, 0.4);
+                sleep(4500);
+                servo.setServo_ramp(0.0);
+                intake.setMotorSpeed_intake(0.0);
+                kicker.setServoRot(0.0);
+                flywheel.setMotorSpeed(0.0, 0.0);
+                turnDegreesRight(135, 0.4);
+                sleep(300);
+// === Step 6: Drive backward 24 inches (was forward) ===
+                strafeDegreesLeft(27,0.4);
+                sleep(300);
+                turnDegreesLeft(8, 0.4);
+                intake.setMotorSpeed_intake(1.0);
+                servo.setServo_ramp(1.0);
+                //strafeDegreesLeft(80, 0.4);
+                //sleep(500);
+                driveDistance(-20, 0.25);
+                //sleep(500);
 
-                //Stop all mechanisms
-                    servo.setServo_ramp(0.0);
-                    intake.setMotorSpeed_intake(0.0);
-                    kicker.setServoRot(0.0);
-                    flywheel.setVelocityRPM(0);
+                stop_drive = false;
+                second_launch = true;
 
-                telemetry.addLine("Autonomous routine complete!");
-                telemetry.update();
-                stop_drive = false;   // set flag false
-                    first_launch = false;
-
-                }
-
+            }
 
         }
     }
@@ -510,4 +529,66 @@ public class BLUE_FAR_CAMERA_SetVelocity extends LinearOpMode
 
         drive.drive_robot(0, 0, 0, 0);
     }
+
+
+    private void strafeDegreesRight(double inches, double speed) {
+        int targetTicks = (int) (Math.abs(inches) * TICKS_PER_INCH);
+
+        // Reset encoders
+        drive.getFrontLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        drive.getFrontLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double direction = inches > 0 ? 1.0 : -1.0;
+
+        int avgTicks;
+        do {
+            drive.drive_robot(0, 0, 1, speed);
+            avgTicks = (Math.abs(drive.getFrontLeft().getCurrentPosition())
+                    + Math.abs(drive.getFrontRight().getCurrentPosition())
+                    + Math.abs(drive.getBackLeft().getCurrentPosition())
+                    + Math.abs(drive.getBackRight().getCurrentPosition())) / 4;
+            telemetry.addData("Driving ticks", "%d/%d", avgTicks, targetTicks);
+            telemetry.update();
+        } while (opModeIsActive() && avgTicks < targetTicks);
+
+        drive.drive_robot(0, 0, 0, 0);
+    }
+
+    private void strafeDegreesLeft(double inches, double speed) {
+        int targetTicks = (int) (Math.abs(inches) * TICKS_PER_INCH);
+
+        // Reset encoders
+        drive.getFrontLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        drive.getFrontLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double direction = inches > 0 ? 1.0 : -1.0;
+
+        int avgTicks;
+        do {
+            drive.drive_robot(0, 0, -1, speed);
+            avgTicks = (Math.abs(drive.getFrontLeft().getCurrentPosition())
+                    + Math.abs(drive.getFrontRight().getCurrentPosition())
+                    + Math.abs(drive.getBackLeft().getCurrentPosition())
+                    + Math.abs(drive.getBackRight().getCurrentPosition())) / 4;
+            telemetry.addData("Driving ticks", "%d/%d", avgTicks, targetTicks);
+            telemetry.update();
+        } while (opModeIsActive() && avgTicks < targetTicks);
+
+        drive.drive_robot(0, 0, 0, 0);
+    }
+
 }

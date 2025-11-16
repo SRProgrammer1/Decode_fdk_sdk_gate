@@ -27,11 +27,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
@@ -40,8 +41,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity_test;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
@@ -95,11 +95,12 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="BLUE_NEAR_NINE_Camera_SetVelocity", group = "Concept")
-//@Disabled
-public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
+@Autonomous(name="BLUE_NEAR_NINE_Camera", group = "Concept")
+@Disabled
+public class BLUE_NEAR_NINE_Camera extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
+    private VoltageSensor batteryVoltageSensor;
 
     static final double TICKS_PER_REV = 537.7;
     static final double WHEEL_DIAMETER_INCHES = 3;
@@ -111,7 +112,16 @@ public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-    final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+
+   /* final double SPEED_GAIN  =  0.04  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.05 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    final double TURN_GAIN   =  0.015  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+
+    final double MAX_AUTO_SPEED = 0.4;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.4;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)*/
+
+   final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
     final double STRAFE_GAIN =  0.035 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
     final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
@@ -129,8 +139,7 @@ public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive = new MecanumDrive_Robot();
-    double targetRPM = 1050;   // Launch power
-    private FlyWheel_Launch_SetVelocity_test flywheel = new FlyWheel_Launch_SetVelocity_test();
+    FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake = new intake_dcmotor();
     boolean lastButtonState = false;
@@ -146,10 +155,7 @@ public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
     boolean stop_drive = false;
     boolean first_launch = false;
     boolean second_launch = false;
-    private VoltageSensor batteryVoltageSensor;
     double voltage = 0;
-
-
 
 
 
@@ -167,8 +173,10 @@ public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
         intake.init(hardwareMap);
         kicker.init(hardwareMap);
 
-
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
+        voltage = batteryVoltageSensor.getVoltage();
+
+
         telemetry.addData("Battery Voltage", "%.2f V", voltage);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -188,7 +196,7 @@ public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
         waitForStart();
         driveDistance(-25, 0.6);
         sleep(500);
-        flywheel.setVelocityRPM(targetRPM);
+        flywheel.setMotorSpeed(0.43, 0.43);
 
         while (opModeIsActive())
         {
@@ -286,12 +294,12 @@ public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
             sleep(10);
 
             if(stop_drive&&(!first_launch)) {
-                sleep(2000);
                 intake.setMotorSpeed_intake(1.0);
-                kicker.setServoRot(0.25);
+                kicker.setServoRot(1.0);
                 servo.setServo_ramp(1.0);
-                sleep(4500);
+                sleep(6000);
                 // === Step 5: Stop all mechanisms ===
+                //flywheel.setMotorSpeed(0.0, 0.0);
                 intake.setMotorSpeed_intake(0);
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
@@ -312,6 +320,7 @@ public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
                 sleep(300);
                 intake.setMotorSpeed_intake(0.0);
                 servo.setServo_ramp(0.0);
+                //flywheel.setMotorSpeed(0.40, 0.40);
                 driveDistance(25, 0.4);
                 turnDegreesLeft(135, 0.3);
                 sleep(300);
@@ -323,23 +332,23 @@ public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
             {
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
-                kicker.setServoRot(0.25);
-                sleep(4000);
+                kicker.setServoRot(1.0);
+                sleep(4500);
                 servo.setServo_ramp(0.0);
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
-                flywheel.setVelocityRPM(0);
+                flywheel.setMotorSpeed(0.0, 0.0);
                 turnDegreesRight(135, 0.4);
                 sleep(300);
 // === Step 6: Drive backward 24 inches (was forward) ===
-                strafeDegreesLeft(30,0.4);
+                strafeDegreesLeft(27,0.4);
                 sleep(300);
-                turnDegreesLeft(6, 0.4);
+                turnDegreesLeft(8, 0.4);
                 intake.setMotorSpeed_intake(1.0);
                 servo.setServo_ramp(1.0);
                 //strafeDegreesLeft(80, 0.4);
                 //sleep(500);
-                driveDistance(-24, 0.25);
+                driveDistance(-20, 0.25);
                 //sleep(500);
 
                 stop_drive = false;
