@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
-import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
+//import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
 import org.firstinspires.ftc.teamcode.mechanisms.TestBench1;
 
 
@@ -81,7 +81,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
     DcMotorEx motor1;
 
     DcMotor intakeMotor;
-    TestBench bench1 = new TestBench();
+   // TestBench bench1 = new TestBench();
     TestBench1 bench2 = new TestBench1();
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -127,7 +127,7 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
         runtime.reset();
 
         bench.init(hardwareMap);
-        bench1.init(hardwareMap);
+        //bench1.init(hardwareMap);
         bench2.init(hardwareMap);
 
 
@@ -213,19 +213,19 @@ public class BasicOmniOpMode_Linear extends LinearOpMode {
 
 
             if (gamepad1.right_bumper) {
-                bench1.setMotorSpeed(0.5);
+               // bench1.setMotorSpeed(0.5);
                 bench2.setMotorSpeed(0.5);
             }
             if (gamepad1.right_trigger > 0.5) {
-                bench1.setMotorSpeed(0.42);
+               // bench1.setMotorSpeed(0.42);
                 bench2.setMotorSpeed(0.42);
             }
             if (gamepad1.left_bumper) {
-                bench1.setMotorSpeed(0.0);
+                //bench1.setMotorSpeed(0.0);
                 bench2.setMotorSpeed(0.0);
             }
             if(gamepad1.left_trigger > 0.5) {
-                bench1.setMotorSpeed(0.38);
+                //bench1.setMotorSpeed(0.38);
                 bench2.setMotorSpeed(0.38);
             }
         }

@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -93,8 +94,8 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="Red_NEAR_NINE_Camera_Flywheel", group = "Concept")
-//@Disabled
+@Autonomous(name="RED_NEAR_NINE_Camera_Flywheel", group = "Concept")
+@Disabled
 public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
@@ -157,10 +158,10 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
 
     private void rpmForHighVoltage() {
         if(voltage > 13.5){
-            flywheel.setMotorSpeed(0.36, 0.36);
+            flywheel.setMotorSpeed(0.37, 0.37);
         }
         else if ((voltage > 13.0) && (voltage < 13.5)){
-            flywheel.setMotorSpeed(0.37, 0.37);
+            flywheel.setMotorSpeed(0.38, 0.38);
         } else if ((voltage > 12.5) && (voltage < 13.0)){
             flywheel.setMotorSpeed(0.40, 0.40);
         }

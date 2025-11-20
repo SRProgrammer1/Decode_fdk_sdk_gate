@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -94,7 +95,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Autonomous(name="BLUE_NEAR_NINE_Camera_Flywheel", group = "Concept")
-//@Disabled
+@Disabled
 public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
@@ -157,10 +158,10 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
 
     private void rpmForHighVoltage() {
         if(voltage > 13.5){
-            flywheel.setMotorSpeed(0.36, 0.36);
+            flywheel.setMotorSpeed(0.37, 0.37);
         }
         else if ((voltage > 13.0) && (voltage < 13.5)){
-            flywheel.setMotorSpeed(0.37, 0.37);
+            flywheel.setMotorSpeed(0.38, 0.38);
         } else if ((voltage > 12.5) && (voltage < 13.0)){
             flywheel.setMotorSpeed(0.40, 0.40);
         }
@@ -182,6 +183,7 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
         servo.init(hardwareMap);
         intake.init(hardwareMap);
         kicker.init(hardwareMap);
+        rpmForHighVoltage();
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
         voltage = batteryVoltageSensor.getVoltage();
@@ -206,7 +208,6 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
         waitForStart();
         driveDistance(-25, 0.6);
         sleep(500);
-        rpmForHighVoltage();
         while (opModeIsActive())
         {
 

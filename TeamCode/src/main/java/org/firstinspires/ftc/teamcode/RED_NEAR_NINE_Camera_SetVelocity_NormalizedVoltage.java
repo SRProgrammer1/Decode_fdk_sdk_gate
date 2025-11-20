@@ -27,21 +27,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.Unused;
+package org.firstinspires.ftc.teamcode;
 
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity_test;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
@@ -93,22 +93,31 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="AUTO_AprilTag_RED_Drive", group = "Concept")
-@Disabled
-public class AUTO_AprilTag_Red_Drive extends LinearOpMode
+@Autonomous(name="RED_NEAR_AUTONOMOUS", group = "Concept")
+//@Disabled
+public class RED_NEAR_NINE_Camera_SetVelocity_NormalizedVoltage extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
     static final double TICKS_PER_REV = 537.7;
-    static final double WHEEL_DIAMETER_INCHES = 3.78;
+    static final double WHEEL_DIAMETER_INCHES = 3;
     static final double TICKS_PER_INCH = TICKS_PER_REV / (Math.PI * WHEEL_DIAMETER_INCHES);
     static final double ROBOT_TRACK_WIDTH_INCHES = 15.0;
-    final double DESIRED_DISTANCE = 68;
+    final double DESIRED_DISTANCE = 55;
     //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
+
+   /* final double SPEED_GAIN  =  0.04  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.05 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    final double TURN_GAIN   =  0.015  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+
+    final double MAX_AUTO_SPEED = 0.4;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.4;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)*/
+
     final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
     final double STRAFE_GAIN =  0.035 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
     final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
@@ -127,7 +136,7 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive = new MecanumDrive_Robot();
-    FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
+    FlyWheel_Launch_SetVelocity_test flywheel = new FlyWheel_Launch_SetVelocity_test();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake = new intake_dcmotor();
     boolean lastButtonState = false;
@@ -142,8 +151,24 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
 
     boolean stop_drive = false;
     boolean first_launch = false;
+    boolean second_launch = false;
+    double voltage = 0;
+    private VoltageSensor batteryVoltageSensor;
+    double targetRPM = 0;
+    double Normalized_targetRPM = 0;
 
+    private void LaunchForNormalizedVoltage() {
+        final double normalized_voltage = 13.2;
+        voltage = batteryVoltageSensor.getVoltage();
 
+        final double voltageNormalizedCoefficient = normalized_voltage / voltage;
+        targetRPM = 1900;
+
+        // Apply target RPM (motor2 will spin opposite automatically)
+        Normalized_targetRPM = targetRPM * voltageNormalizedCoefficient;
+        flywheel.setVelocityRPM(Normalized_targetRPM);
+
+    }
 
 
 
@@ -160,12 +185,13 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
         intake.init(hardwareMap);
         kicker.init(hardwareMap);
 
+        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
+        voltage = batteryVoltageSensor.getVoltage();
+        LaunchForNormalizedVoltage();
 
 
+        telemetry.addData("Battery Voltage", "%.2f V", voltage);
         telemetry.addData("Status", "Initialized");
-        if (!flywheel.isInitialized()) {
-            telemetry.addData("Warning", "Flywheel motors not found! Check configuration names.");
-        }
         telemetry.update();
 
         // Initialize the Apriltag Detection process
@@ -181,14 +207,12 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
         telemetry.addData(">", "Touch START to start OpMode");
         telemetry.update();
         waitForStart();
-        driveDistance(-40, 0.6);
+        driveDistance(-23, 0.6);
         sleep(500);
-        flywheel.setMotorSpeed(0.39, 0.39);
-
         while (opModeIsActive())
         {
 
-
+            LaunchForNormalizedVoltage();
             boolean currentButtonState = gamepad2.a;
             boolean currentButtonState2 = gamepad2.x;
 
@@ -225,6 +249,7 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
 
             // Tell the driver what we see, and what to do.
             if (targetFound) {
+                telemetry.addData("Battery Voltage", "%.2f V", voltage);
                 telemetry.addData("\n>","HOLD Left-Bumper to Drive to Target\n");
                 telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
                 telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
@@ -255,7 +280,7 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
                 strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 // Stop if close enough
-                if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0)) {  // within 2 inches
+                if ((Math.abs(rangeError) < 2.0)  & (Math.abs(headingError) < 2.0) & (Math.abs(yawError) < 2.0)) {  // within 2 inches
                     forward = 0;
                     strafe = 0;
                     turn = 0;
@@ -282,30 +307,38 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
 
             if(stop_drive&&(!first_launch)) {
                 intake.setMotorSpeed_intake(1.0);
-                kicker.setServoRot(1.0);
+                kicker.setServoRot(0.80);
                 servo.setServo_ramp(1.0);
-                sleep(4000);
+                sleep(6000);
                 // === Step 5: Stop all mechanisms ===
                 //flywheel.setMotorSpeed(0.0, 0.0);
                 intake.setMotorSpeed_intake(0);
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
                 // sleep(500);
-                turnDegreesRight(310, 0.4);
-                sleep(500);
+                turnDegreesLeft(135, 0.4);
+                //sleep(300);
+                strafeDegreesRight(9,0.3);
+                //sleep(200);
+                turnDegreesRight(3, 0.4);
+
+                //turnDegreesRight(15, 0.4);
+                // sleep(200);
+
 // === Step 6: Drive backward 24 inches (was forward) ===
                 intake.setMotorSpeed_intake(1.0);
                 servo.setServo_ramp(1.0);
                 //strafeDegreesLeft(80, 0.4);
                 //sleep(500);
-                driveDistance(-34, 0.25);
-                sleep(1000);
+                driveDistance(-25, 0.25);
+                //sleep(300);
                 intake.setMotorSpeed_intake(0.0);
                 servo.setServo_ramp(0.0);
                 //flywheel.setMotorSpeed(0.40, 0.40);
-                driveDistance(34, 0.4);
-                turnDegreesRight(200, 0.3);
-                sleep(500);
+                strafeDegreesLeft(7, 0.3);
+                driveDistance(18, 0.4);
+                turnDegreesRight(135, 0.3);
+                //sleep(300);
                 first_launch=true;
                 stop_drive = false;
             }
@@ -314,18 +347,37 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
             {
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
-                kicker.setServoRot(1.0);
-                sleep(4000);
+                kicker.setServoRot(0.80);
+                sleep(5000);
                 servo.setServo_ramp(0.0);
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
-                flywheel.setMotorSpeed(0.0, 0.0);
-                turnDegreesRight(50, 0.5);
-                driveDistance(20, 0.5);
-                stop_drive = false;   // set flag false
+                flywheel.setVelocityRPM(0.0);
+                turnDegreesRight(80, 0.4);
+                driveDistance(15, 0.5);
+
+               // strafeDegreesLeft(10, 0.3);
+              //  strafeDegreesRight(28,0.3);
+
+
+/*
+                turnDegreesLeft(135, 0.4);
+                sleep(300);
+// === Step 6: Drive backward 24 inches (was forward) ===
+                strafeDegreesRight(28,0.3);
+                sleep(300);
+                turnDegreesRight(10, 0.4);
+                intake.setMotorSpeed_intake(1.0);
+                servo.setServo_ramp(1.0);
+                //strafeDegreesLeft(80, 0.4);
+                //sleep(500);
+                driveDistance(-19, 0.25);
+                //sleep(500);
+*/
+                stop_drive = false;
+                second_launch = true;
 
             }
-
 
         }
     }
@@ -467,15 +519,15 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
         int targetTicks = (int) (turnDistance * TICKS_PER_INCH);
 
         // Reset encoders
-        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         int avgTicks;
         do {
@@ -492,60 +544,60 @@ public class AUTO_AprilTag_Red_Drive extends LinearOpMode
     }
 
 
-    private void strafeDegreesRight(double degrees, double speed) {
-        double turnCircumference = Math.PI * ROBOT_TRACK_WIDTH_INCHES;
-        double turnDistance = (degrees / 360.0) * turnCircumference;
-        int targetTicks = (int) (turnDistance * TICKS_PER_INCH);
+    private void strafeDegreesRight(double inches, double speed) {
+        int targetTicks = (int) (Math.abs(inches) * TICKS_PER_INCH);
 
         // Reset encoders
-        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double direction = inches > 0 ? 1.0 : -1.0;
 
         int avgTicks;
         do {
-            drive.drive_robot(0, 0, 1.0, speed); // rotate left (negative rotation)
+            drive.drive_robot(0, 0, 1, speed);
             avgTicks = (Math.abs(drive.getFrontLeft().getCurrentPosition())
                     + Math.abs(drive.getFrontRight().getCurrentPosition())
                     + Math.abs(drive.getBackLeft().getCurrentPosition())
                     + Math.abs(drive.getBackRight().getCurrentPosition())) / 4;
-            telemetry.addData("Turning ticks", "%d/%d", avgTicks, targetTicks);
+            telemetry.addData("Driving ticks", "%d/%d", avgTicks, targetTicks);
             telemetry.update();
         } while (opModeIsActive() && avgTicks < targetTicks);
 
         drive.drive_robot(0, 0, 0, 0);
     }
 
-    private void strafeDegreesLeft(double degrees, double speed) {
-        double turnCircumference = Math.PI * ROBOT_TRACK_WIDTH_INCHES;
-        double turnDistance = (degrees / 360.0) * turnCircumference;
-        int targetTicks = (int) (turnDistance * TICKS_PER_INCH);
+    private void strafeDegreesLeft(double inches, double speed) {
+        int targetTicks = (int) (Math.abs(inches) * TICKS_PER_INCH);
 
         // Reset encoders
-        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        drive.getFrontLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getFrontRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackLeft().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
-        drive.getBackRight().setMode(com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getFrontRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackLeft().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drive.getBackRight().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double direction = inches > 0 ? 1.0 : -1.0;
 
         int avgTicks;
         do {
-            drive.drive_robot(0, 0, -1.0, speed); // rotate left (negative rotation)
+            drive.drive_robot(0, 0, -1, speed);
             avgTicks = (Math.abs(drive.getFrontLeft().getCurrentPosition())
                     + Math.abs(drive.getFrontRight().getCurrentPosition())
                     + Math.abs(drive.getBackLeft().getCurrentPosition())
                     + Math.abs(drive.getBackRight().getCurrentPosition())) / 4;
-            telemetry.addData("Turning ticks", "%d/%d", avgTicks, targetTicks);
+            telemetry.addData("Driving ticks", "%d/%d", avgTicks, targetTicks);
             telemetry.update();
         } while (opModeIsActive() && avgTicks < targetTicks);
 

@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
-import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
+//import org.firstinspires.ftc.teamcode.mechanisms.TestBench;
 import org.firstinspires.ftc.teamcode.mechanisms.TestBench1;
 @Disabled
 
@@ -22,7 +22,7 @@ public class MainCode extends LinearOpMode {
     DcMotorEx motor1;
     DcMotor intakeMotor;
 
-    TestBench bench1 = new TestBench();
+   // TestBench bench1 = new TestBench();
     TestBench1 bench2 = new TestBench1();
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -54,7 +54,7 @@ public class MainCode extends LinearOpMode {
         runtime.reset();
 
         bench.init(hardwareMap);
-        bench1.init(hardwareMap);
+       // bench1.init(hardwareMap);
         bench2.init(hardwareMap);
 
         motor = hardwareMap.get(DcMotorEx.class, "fly_wheel_1");

@@ -32,8 +32,10 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
@@ -93,7 +95,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Autonomous(name="BLUE_NEAR_SIX_Camera", group = "Concept")
-//@Disabled
+@Disabled
 public class BLUE_NEAR_SIX_Camera extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
@@ -142,9 +144,22 @@ public class BLUE_NEAR_SIX_Camera extends LinearOpMode
     boolean stop_drive = false;
     boolean first_launch = false;
     boolean second_launch = false;
+    double voltage = 0;
+    private VoltageSensor batteryVoltageSensor;
 
-
-
+    private void rpmForHighVoltage() {
+        if(voltage > 13.5){
+            flywheel.setMotorSpeed(0.37, 0.37);
+        }
+        else if ((voltage > 13.0) && (voltage < 13.5)){
+            flywheel.setMotorSpeed(0.38, 0.38);
+        } else if ((voltage > 12.5) && (voltage < 13.0)){
+            flywheel.setMotorSpeed(0.40, 0.40);
+        }
+        else{
+            flywheel.setMotorSpeed(0.42, 0.42);
+        }
+    }
 
 
     @Override public void runOpMode()
@@ -160,12 +175,12 @@ public class BLUE_NEAR_SIX_Camera extends LinearOpMode
         intake.init(hardwareMap);
         kicker.init(hardwareMap);
 
+        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
+        voltage = batteryVoltageSensor.getVoltage();
+        rpmForHighVoltage();
 
-
+        telemetry.addData("Battery Voltage", "%.2f V", voltage);
         telemetry.addData("Status", "Initialized");
-        if (!flywheel.isInitialized()) {
-            telemetry.addData("Warning", "Flywheel motors not found! Check configuration names.");
-        }
         telemetry.update();
 
         // Initialize the Apriltag Detection process
@@ -183,8 +198,6 @@ public class BLUE_NEAR_SIX_Camera extends LinearOpMode
         waitForStart();
         driveDistance(-25, 0.6);
         sleep(500);
-        flywheel.setMotorSpeed(0.43, 0.43);
-
         while (opModeIsActive())
         {
 
@@ -225,6 +238,7 @@ public class BLUE_NEAR_SIX_Camera extends LinearOpMode
 
             // Tell the driver what we see, and what to do.
             if (targetFound) {
+                telemetry.addData("Battery Voltage", "%.2f V", voltage);
                 telemetry.addData("\n>","HOLD Left-Bumper to Drive to Target\n");
                 telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
                 telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
@@ -284,7 +298,7 @@ public class BLUE_NEAR_SIX_Camera extends LinearOpMode
                 intake.setMotorSpeed_intake(1.0);
                 kicker.setServoRot(1.0);
                 servo.setServo_ramp(1.0);
-                sleep(5000);
+                sleep(6000);
                 // === Step 5: Stop all mechanisms ===
                 //flywheel.setMotorSpeed(0.0, 0.0);
                 intake.setMotorSpeed_intake(0);

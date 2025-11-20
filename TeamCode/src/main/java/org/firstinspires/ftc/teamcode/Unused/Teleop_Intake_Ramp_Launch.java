@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -9,7 +10,8 @@ import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
 
-@TeleOp(name = "TeleOp", group = "TeleOp")
+@TeleOp(name = "TeleOp_Original", group = "TeleOp")
+@Disabled
 public class Teleop_Intake_Ramp_Launch extends OpMode {
 
     ServoBench kicker = new ServoBench();
@@ -20,7 +22,7 @@ public class Teleop_Intake_Ramp_Launch extends OpMode {
     boolean lastButtonState = false;
     boolean lastButtonState2 = false;
     double forward, right, rotate;
-    double maxSpeed = 0.5;
+    double maxSpeed = 1.0;
     double start_stop = 0.0;
     double left_motor = 0.0, right_motor = 0.0;
 

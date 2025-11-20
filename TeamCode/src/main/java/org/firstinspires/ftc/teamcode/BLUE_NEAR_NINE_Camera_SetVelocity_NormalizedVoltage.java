@@ -32,15 +32,17 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity_test;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
@@ -92,9 +94,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="RED_NEAR_NINE_Camera_SetVelocity", group = "Concept")
-//@Disabled
-public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
+@Autonomous(name="BLUE_NEAR_NINE_Camera_SetVelocity_NormalizedVoltage", group = "Concept")
+@Disabled
+public class BLUE_NEAR_NINE_Camera_SetVelocity_NormalizedVoltage extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -108,6 +110,15 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
+
+   /* final double SPEED_GAIN  =  0.04  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.05 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    final double TURN_GAIN   =  0.015  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+
+    final double MAX_AUTO_SPEED = 0.4;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.4;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)*/
+
     final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
     final double STRAFE_GAIN =  0.035 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
     final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
@@ -117,7 +128,7 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
     final double MAX_AUTO_TURN  = 0.2;   //  Clip the turn speed to this max value (adjust for your robot)
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int DESIRED_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -126,8 +137,7 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive = new MecanumDrive_Robot();
-    double targetRPM = 1500;   // Launch power
-    private FlyWheel_Launch_SetVelocity flywheel = new FlyWheel_Launch_SetVelocity();
+    FlyWheel_Launch_SetVelocity_test flywheel = new FlyWheel_Launch_SetVelocity_test();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake = new intake_dcmotor();
     boolean lastButtonState = false;
@@ -143,8 +153,23 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
     boolean stop_drive = false;
     boolean first_launch = false;
     boolean second_launch = false;
+    double voltage = 0;
+    private VoltageSensor batteryVoltageSensor;
+    double targetRPM = 0;
+    double Normalized_targetRPM = 0;
 
+    private void LaunchForNormalizedVoltage() {
+        final double normalized_voltage = 13.2;
+        voltage = batteryVoltageSensor.getVoltage();
 
+        final double voltageNormalizedCoefficient = normalized_voltage / voltage;
+        targetRPM = 1900;
+
+        // Apply target RPM (motor2 will spin opposite automatically)
+        Normalized_targetRPM = targetRPM * voltageNormalizedCoefficient;
+        flywheel.setVelocityRPM(Normalized_targetRPM);
+
+    }
 
 
 
@@ -161,8 +186,12 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
         intake.init(hardwareMap);
         kicker.init(hardwareMap);
 
+        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
+        voltage = batteryVoltageSensor.getVoltage();
+        LaunchForNormalizedVoltage();
 
 
+        telemetry.addData("Battery Voltage", "%.2f V", voltage);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -179,14 +208,12 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
         telemetry.addData(">", "Touch START to start OpMode");
         telemetry.update();
         waitForStart();
-        driveDistance(-25, 0.6);
+        driveDistance(-23, 0.6);
         sleep(500);
-        flywheel.setVelocityRPM(targetRPM);
-
         while (opModeIsActive())
         {
 
-
+            LaunchForNormalizedVoltage();
             boolean currentButtonState = gamepad2.a;
             boolean currentButtonState2 = gamepad2.x;
 
@@ -223,6 +250,7 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
 
             // Tell the driver what we see, and what to do.
             if (targetFound) {
+                telemetry.addData("Battery Voltage", "%.2f V", voltage);
                 telemetry.addData("\n>","HOLD Left-Bumper to Drive to Target\n");
                 telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
                 telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
@@ -253,8 +281,7 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
                 strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 // Stop if close enough
-                if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0)) {  // within 2 inches
-                    //if ((Math.abs(rangeError) < 3.0) ) {  // within 2 inches
+                if ((Math.abs(rangeError) < 2.0)  & (Math.abs(headingError) < 2.0) & (Math.abs(yawError) < 2.0)) {  // within 2 inches
                     forward = 0;
                     strafe = 0;
                     turn = 0;
@@ -281,20 +308,23 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
 
             if(stop_drive&&(!first_launch)) {
                 intake.setMotorSpeed_intake(1.0);
-                kicker.setServoRot(1.0);
+                kicker.setServoRot(0.80);
                 servo.setServo_ramp(1.0);
-                sleep(5000);
+                sleep(6000);
                 // === Step 5: Stop all mechanisms ===
+                //flywheel.setMotorSpeed(0.0, 0.0);
                 intake.setMotorSpeed_intake(0);
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
                 // sleep(500);
-                turnDegreesLeft(135, 0.4);
-                sleep(500);
-                strafeDegreesRight(9,0.4);
+                turnDegreesRight(135, 0.4);
+                sleep(300);
+                strafeDegreesLeft(9,0.3);
                 sleep(200);
+                turnDegreesLeft(3, 0.4);
+
                 //turnDegreesRight(15, 0.4);
-               // sleep(200);
+                // sleep(200);
 
 // === Step 6: Drive backward 24 inches (was forward) ===
                 intake.setMotorSpeed_intake(1.0);
@@ -305,8 +335,10 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
                 sleep(300);
                 intake.setMotorSpeed_intake(0.0);
                 servo.setServo_ramp(0.0);
-                driveDistance(25, 0.4);
-                turnDegreesRight(135, 0.3);
+                //flywheel.setMotorSpeed(0.40, 0.40);
+                strafeDegreesRight(7, 0.3);
+                driveDistance(18, 0.4);
+                turnDegreesLeft(135, 0.3);
                 sleep(300);
                 first_launch=true;
                 stop_drive = false;
@@ -316,25 +348,33 @@ public class RED_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
             {
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
-                kicker.setServoRot(1.0);
-                sleep(4500);
+                kicker.setServoRot(0.80);
+                sleep(5000);
                 servo.setServo_ramp(0.0);
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
-                flywheel.setVelocityRPM(0);
+                flywheel.setVelocityRPM(0.0);
+                turnDegreesLeft(80, 0.4);
+                driveDistance(15, 0.5);
+
+               // strafeDegreesLeft(10, 0.3);
+              //  strafeDegreesRight(28,0.3);
+
+
+/*
                 turnDegreesLeft(135, 0.4);
                 sleep(300);
 // === Step 6: Drive backward 24 inches (was forward) ===
-                strafeDegreesRight(29,0.4);
+                strafeDegreesRight(28,0.3);
                 sleep(300);
-                turnDegreesRight(12, 0.4);
+                turnDegreesRight(10, 0.4);
                 intake.setMotorSpeed_intake(1.0);
                 servo.setServo_ramp(1.0);
                 //strafeDegreesLeft(80, 0.4);
                 //sleep(500);
-                driveDistance(-20, 0.25);
+                driveDistance(-19, 0.25);
                 //sleep(500);
-
+*/
                 stop_drive = false;
                 second_launch = true;
 

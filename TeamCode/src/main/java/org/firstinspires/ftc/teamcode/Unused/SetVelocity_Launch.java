@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity;
 //@Disabled
 @TeleOp(name = "SetVelocity Launch", group = "TeleOp")
+@Disabled
 public class SetVelocity_Launch extends OpMode {
 
     FlyWheel_Launch_SetVelocity launch = new FlyWheel_Launch_SetVelocity();

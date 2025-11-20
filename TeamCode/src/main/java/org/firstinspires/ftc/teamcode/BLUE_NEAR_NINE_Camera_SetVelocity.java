@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
@@ -96,7 +97,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Autonomous(name="BLUE_NEAR_NINE_Camera_SetVelocity", group = "Concept")
-//@Disabled
+@Disabled
 public class BLUE_NEAR_NINE_Camera_SetVelocity extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.

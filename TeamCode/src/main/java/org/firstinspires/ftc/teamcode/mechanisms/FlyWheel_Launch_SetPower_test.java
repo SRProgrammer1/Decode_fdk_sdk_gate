@@ -1,15 +1,16 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class FlyWheel_Launch_SetPower {
+
+public class FlyWheel_Launch_SetPower_test {
 
     private DcMotor motor1, motor2;
-    //public double getMotor1Velocity() { return motor1.getVelocity(); }
-    //public double getMotor2Velocity() { return motor2.getVelocity(); }
+   // public double getMotor1Velocity() { return motor1.getVelocity(); }
+   // public double getMotor2Velocity() { return motor2.getVelocity(); }
 
     public void init(HardwareMap hwMap) {
         try {
