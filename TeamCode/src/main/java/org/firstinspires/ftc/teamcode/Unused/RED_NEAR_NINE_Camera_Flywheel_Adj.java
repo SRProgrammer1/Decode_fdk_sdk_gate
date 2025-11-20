@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import android.util.Size;
 
@@ -94,9 +94,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="RED_NEAR_SIX_Camera", group = "Concept")
+@Autonomous(name="RED_NEAR_NINE_Camera_Flywheel", group = "Concept")
 @Disabled
-public class RED_NEAR_SIX_Camera extends LinearOpMode
+public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -110,6 +110,15 @@ public class RED_NEAR_SIX_Camera extends LinearOpMode
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
+
+   /* final double SPEED_GAIN  =  0.04  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.05 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    final double TURN_GAIN   =  0.015  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+
+    final double MAX_AUTO_SPEED = 0.4;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.4;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)*/
+
     final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
     final double STRAFE_GAIN =  0.035 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
     final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
@@ -344,9 +353,21 @@ public class RED_NEAR_SIX_Camera extends LinearOpMode
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
                 flywheel.setMotorSpeed(0.0, 0.0);
-                turnDegreesRight(50, 0.5);
-                driveDistance(10, 0.5);
-                stop_drive = false;   // set flag false
+                turnDegreesLeft(135, 0.4);
+                sleep(300);
+// === Step 6: Drive backward 24 inches (was forward) ===
+                strafeDegreesRight(28,0.3);
+                sleep(300);
+                turnDegreesRight(8, 0.4);
+                intake.setMotorSpeed_intake(1.0);
+                servo.setServo_ramp(1.0);
+                //strafeDegreesLeft(80, 0.4);
+                //sleep(500);
+                driveDistance(-19, 0.25);
+                //sleep(500);
+
+                stop_drive = false;
+                second_launch = true;
 
             }
 

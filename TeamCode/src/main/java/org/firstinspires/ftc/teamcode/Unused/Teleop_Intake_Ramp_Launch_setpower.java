@@ -1,22 +1,24 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity_test;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
 import org.firstinspires.ftc.teamcode.mechanisms.intake_dcmotor;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 
-@TeleOp(name = "TeleOp_Setvelocity", group = "TeleOp")
-public class Teleop_SetVelocity_NormalizedVoltage extends OpMode {
+@TeleOp(name = "TeleOp_Launch_Adjust_tested_lastMatch", group = "TeleOp")
+@Disabled
+public class Teleop_Intake_Ramp_Launch_setpower extends OpMode {
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive_r = new MecanumDrive_Robot();
-    FlyWheel_Launch_SetVelocity_test launch = new FlyWheel_Launch_SetVelocity_test();
+    FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake_motor = new intake_dcmotor();
     boolean lastButtonState = false;
@@ -38,12 +40,8 @@ public class Teleop_SetVelocity_NormalizedVoltage extends OpMode {
     double Target_RPM = 0;
     boolean yWasPressed = false;
     boolean bWasPressed = false;
-    final double normalized_voltage = 13.2;
 
-    double targetRPM = 0;
-    double Normalized_targetRPM = 0;
-
-  /*  private void rpmForHighVoltage() {
+    private void rpmForHighVoltage() {
         if(voltage > 13.5){
             near_launch_power = 0.38;
             med_launch_power = 0.42;
@@ -65,22 +63,22 @@ public class Teleop_SetVelocity_NormalizedVoltage extends OpMode {
         else{
             near_launch_power = 0.43;
             med_launch_power = 0.46;
-            far_launch_power =0.50;
+            far_launch_power = 0.50;
             //flywheel.setMotorSpeed(0.50, 0.50);
         }
-    }*/
+    }
 
     @Override
     public void init() {
         drive_r.init(hardwareMap);
-        launch.init(hardwareMap);
+        flywheel.init(hardwareMap);
         servo.init(hardwareMap);
         intake_motor.init(hardwareMap);
         kicker.init(hardwareMap);
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
         voltage = batteryVoltageSensor.getVoltage();
-        //rpmForHighVoltage();
+        rpmForHighVoltage();
         telemetry.addData("Battery Voltage", "%.2f V", voltage);
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -90,7 +88,7 @@ public class Teleop_SetVelocity_NormalizedVoltage extends OpMode {
     public void loop() {
         voltage = batteryVoltageSensor.getVoltage();
 
-        //rpmForHighVoltage();
+        rpmForHighVoltage();
         boolean currentButtonState = gamepad2.a;
         boolean currentButtonState2 = gamepad2.x;
 
@@ -142,52 +140,35 @@ public class Teleop_SetVelocity_NormalizedVoltage extends OpMode {
         servo.setServo_ramp(start_stop);
 
 
-        if (gamepad2.y && !yWasPressed) {
-            targetRPM += 20;
+        if (gamepad1.y && !yWasPressed) {
+            Target_RPM += 0.01;
         }
         yWasPressed = gamepad1.y;
 
 // B = -20 RPM once
-        if (gamepad2.b && !bWasPressed) {
-            targetRPM -= 20;
+        if (gamepad1.b && !bWasPressed) {
+            Target_RPM -= 0.01;
         }
         bWasPressed = gamepad1.b;
 
+        // Flywheel control
         if (gamepad2.right_bumper) {
-           // intake_motor.setMotorSpeed_intake(1.0);
-           // kicker.setServoRot(0.15);
-           // servo.setServo_ramp(1.0);
 
-            targetRPM = 2250;
 
+            Target_RPM = far_launch_power;
         } else if (gamepad2.right_trigger > 0.5) {
-           // intake_motor.setMotorSpeed_intake(1.0);
-            //kicker.setServoRot(0.15);
-           // servo.setServo_ramp(1.0);
+            Target_RPM = med_launch_power;
 
-            targetRPM = 2100;
 
         } else if (gamepad2.left_bumper) {
-            //intake_motor.setMotorSpeed_intake(1.0);
-            //kicker.setServoRot(0.15);
-            //servo.setServo_ramp(1.0);
+            Target_RPM = near_launch_power;
 
-            targetRPM = 1890;
 
         } else if (gamepad2.left_trigger > 0.5) {
-            targetRPM = 0;
-            //intake_motor.setMotorSpeed_intake(0);
-           // kicker.setServoRot(0.0);
-           // servo.setServo_ramp(0.0);
+            Target_RPM = 0;
         }
 
-
-
-        final double voltageNormalizedCoefficient = normalized_voltage / voltage;
-
-        // Apply target RPM (motor2 will spin opposite automatically)
-        Normalized_targetRPM = targetRPM * voltageNormalizedCoefficient;
-        launch.setVelocityRPM(Normalized_targetRPM);
+        flywheel.setMotorSpeed(Target_RPM, Target_RPM);
 
         // update for next loop
         lastButtonState = currentButtonState;
@@ -196,12 +177,9 @@ public class Teleop_SetVelocity_NormalizedVoltage extends OpMode {
 
         // Debug feedback
         telemetry.addData("Battery Voltage", "%.2f V", voltage);
-        telemetry.addData("Target RPM", targetRPM);
-        telemetry.addData("Normalized Target RPM", Normalized_targetRPM);
-
-        telemetry.addData("Motor Velocity", launch.getMotor1Velocity() / 28.0 * 60.0);
-        telemetry.addData("Motor1 Velocity TPS", launch.getMotor1Velocity());
-        telemetry.addData("Motor2 Velocity TPS", launch.getMotor2Velocity());
+        telemetry.addData("Flywheel Power", Target_RPM);
+        telemetry.addData("Ramp/Intake Power", start_stop);
+        telemetry.addData("Speed Mode", maxSpeed);
         telemetry.update();
     }
 }

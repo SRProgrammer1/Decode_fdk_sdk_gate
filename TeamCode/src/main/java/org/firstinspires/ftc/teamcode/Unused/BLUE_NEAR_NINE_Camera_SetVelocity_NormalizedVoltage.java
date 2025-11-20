@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import android.util.Size;
 
@@ -42,7 +42,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
-import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetPower;
+import org.firstinspires.ftc.teamcode.mechanisms.FlyWheel_Launch_SetVelocity_test;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive_Robot;
 import org.firstinspires.ftc.teamcode.mechanisms.Ramp_Servo;
 import org.firstinspires.ftc.teamcode.mechanisms.ServoBench;
@@ -94,9 +94,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="RED_NEAR_NINE_Camera_Flywheel", group = "Concept")
+@Autonomous(name="BLUE_NEAR_NINE_Camera_SetVelocity_NormalizedVoltage", group = "Concept")
 @Disabled
-public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
+public class BLUE_NEAR_NINE_Camera_SetVelocity_NormalizedVoltage extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -128,7 +128,7 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
     final double MAX_AUTO_TURN  = 0.2;   //  Clip the turn speed to this max value (adjust for your robot)
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int DESIRED_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -137,7 +137,7 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
 
     ServoBench kicker = new ServoBench();
     MecanumDrive_Robot drive = new MecanumDrive_Robot();
-    FlyWheel_Launch_SetPower flywheel = new FlyWheel_Launch_SetPower();
+    FlyWheel_Launch_SetVelocity_test flywheel = new FlyWheel_Launch_SetVelocity_test();
     Ramp_Servo servo = new Ramp_Servo();
     intake_dcmotor intake = new intake_dcmotor();
     boolean lastButtonState = false;
@@ -155,19 +155,20 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
     boolean second_launch = false;
     double voltage = 0;
     private VoltageSensor batteryVoltageSensor;
+    double targetRPM = 0;
+    double Normalized_targetRPM = 0;
 
-    private void rpmForHighVoltage() {
-        if(voltage > 13.5){
-            flywheel.setMotorSpeed(0.37, 0.37);
-        }
-        else if ((voltage > 13.0) && (voltage < 13.5)){
-            flywheel.setMotorSpeed(0.38, 0.38);
-        } else if ((voltage > 12.5) && (voltage < 13.0)){
-            flywheel.setMotorSpeed(0.40, 0.40);
-        }
-        else{
-            flywheel.setMotorSpeed(0.42, 0.42);
-        }
+    private void LaunchForNormalizedVoltage() {
+        final double normalized_voltage = 13.2;
+        voltage = batteryVoltageSensor.getVoltage();
+
+        final double voltageNormalizedCoefficient = normalized_voltage / voltage;
+        targetRPM = 1900;
+
+        // Apply target RPM (motor2 will spin opposite automatically)
+        Normalized_targetRPM = targetRPM * voltageNormalizedCoefficient;
+        flywheel.setVelocityRPM(Normalized_targetRPM);
+
     }
 
 
@@ -187,6 +188,7 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
         voltage = batteryVoltageSensor.getVoltage();
+        LaunchForNormalizedVoltage();
 
 
         telemetry.addData("Battery Voltage", "%.2f V", voltage);
@@ -208,11 +210,10 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
         waitForStart();
         driveDistance(-23, 0.6);
         sleep(500);
-        rpmForHighVoltage();
         while (opModeIsActive())
         {
 
-
+            LaunchForNormalizedVoltage();
             boolean currentButtonState = gamepad2.a;
             boolean currentButtonState2 = gamepad2.x;
 
@@ -280,7 +281,7 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
                 strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 // Stop if close enough
-                if ((Math.abs(rangeError) < 3.0)  & (Math.abs(headingError) < 3.0)) {  // within 2 inches
+                if ((Math.abs(rangeError) < 2.0)  & (Math.abs(headingError) < 2.0) & (Math.abs(yawError) < 2.0)) {  // within 2 inches
                     forward = 0;
                     strafe = 0;
                     turn = 0;
@@ -307,7 +308,7 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
 
             if(stop_drive&&(!first_launch)) {
                 intake.setMotorSpeed_intake(1.0);
-                kicker.setServoRot(1.0);
+                kicker.setServoRot(0.80);
                 servo.setServo_ramp(1.0);
                 sleep(6000);
                 // === Step 5: Stop all mechanisms ===
@@ -316,11 +317,11 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
                 // sleep(500);
-                turnDegreesLeft(135, 0.4);
+                turnDegreesRight(135, 0.4);
                 sleep(300);
-                strafeDegreesRight(9,0.4);
+                strafeDegreesLeft(9,0.3);
                 sleep(200);
-                turnDegreesRight(3, 0.4);
+                turnDegreesLeft(3, 0.4);
 
                 //turnDegreesRight(15, 0.4);
                 // sleep(200);
@@ -330,14 +331,14 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
                 servo.setServo_ramp(1.0);
                 //strafeDegreesLeft(80, 0.4);
                 //sleep(500);
-                driveDistance(-23, 0.25);
+                driveDistance(-25, 0.25);
                 sleep(300);
                 intake.setMotorSpeed_intake(0.0);
                 servo.setServo_ramp(0.0);
                 //flywheel.setMotorSpeed(0.40, 0.40);
-                strafeDegreesLeft(7, 0.4);
+                strafeDegreesRight(7, 0.3);
                 driveDistance(18, 0.4);
-                turnDegreesRight(135, 0.3);
+                turnDegreesLeft(135, 0.3);
                 sleep(300);
                 first_launch=true;
                 stop_drive = false;
@@ -347,25 +348,33 @@ public class RED_NEAR_NINE_Camera_Flywheel_Adj extends LinearOpMode
             {
                 servo.setServo_ramp(1.0);
                 intake.setMotorSpeed_intake(1.0);
-                kicker.setServoRot(1.0);
-                sleep(4500);
+                kicker.setServoRot(0.80);
+                sleep(5000);
                 servo.setServo_ramp(0.0);
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
-                flywheel.setMotorSpeed(0.0, 0.0);
+                flywheel.setVelocityRPM(0.0);
+                turnDegreesLeft(80, 0.4);
+                driveDistance(15, 0.5);
+
+               // strafeDegreesLeft(10, 0.3);
+              //  strafeDegreesRight(28,0.3);
+
+
+/*
                 turnDegreesLeft(135, 0.4);
                 sleep(300);
 // === Step 6: Drive backward 24 inches (was forward) ===
                 strafeDegreesRight(28,0.3);
                 sleep(300);
-                turnDegreesRight(8, 0.4);
+                turnDegreesRight(10, 0.4);
                 intake.setMotorSpeed_intake(1.0);
                 servo.setServo_ramp(1.0);
                 //strafeDegreesLeft(80, 0.4);
                 //sleep(500);
                 driveDistance(-19, 0.25);
                 //sleep(500);
-
+*/
                 stop_drive = false;
                 second_launch = true;
 

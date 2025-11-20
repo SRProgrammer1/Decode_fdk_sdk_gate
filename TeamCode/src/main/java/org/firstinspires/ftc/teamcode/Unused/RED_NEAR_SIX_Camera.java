@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Unused;
 
 import android.util.Size;
 
@@ -94,9 +94,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="BLUE_NEAR_NINE_Camera_Flywheel", group = "Concept")
+@Autonomous(name="RED_NEAR_SIX_Camera", group = "Concept")
 @Disabled
-public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
+public class RED_NEAR_SIX_Camera extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
 
@@ -110,16 +110,7 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-
-   /* final double SPEED_GAIN  =  0.04  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-    final double STRAFE_GAIN =  0.05 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
-    final double TURN_GAIN   =  0.015  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
-
-    final double MAX_AUTO_SPEED = 0.4;   //  Clip the approach speed to this max value (adjust for your robot)
-    final double MAX_AUTO_STRAFE= 0.4;   //  Clip the strafing speed to this max value (adjust for your robot)
-    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)*/
-
-   final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
     final double STRAFE_GAIN =  0.035 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
     final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
@@ -128,7 +119,7 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
     final double MAX_AUTO_TURN  = 0.2;   //  Clip the turn speed to this max value (adjust for your robot)
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int DESIRED_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -171,6 +162,7 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
     }
 
 
+
     @Override public void runOpMode()
     {
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
@@ -183,7 +175,6 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
         servo.init(hardwareMap);
         intake.init(hardwareMap);
         kicker.init(hardwareMap);
-        rpmForHighVoltage();
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
         voltage = batteryVoltageSensor.getVoltage();
@@ -206,8 +197,9 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
         telemetry.addData(">", "Touch START to start OpMode");
         telemetry.update();
         waitForStart();
-        driveDistance(-25, 0.6);
+        driveDistance(-23, 0.6);
         sleep(500);
+        rpmForHighVoltage();
         while (opModeIsActive())
         {
 
@@ -315,25 +307,28 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
                 kicker.setServoRot(0.0);
                 servo.setServo_ramp(0.0);
                 // sleep(500);
-                turnDegreesRight(135, 0.4);
+                turnDegreesLeft(135, 0.4);
                 sleep(300);
-                strafeDegreesLeft(7,0.4);
+                strafeDegreesRight(9,0.4);
                 sleep(200);
+                turnDegreesRight(3, 0.4);
+
                 //turnDegreesRight(15, 0.4);
-               // sleep(200);
+                // sleep(200);
 
 // === Step 6: Drive backward 24 inches (was forward) ===
                 intake.setMotorSpeed_intake(1.0);
                 servo.setServo_ramp(1.0);
                 //strafeDegreesLeft(80, 0.4);
                 //sleep(500);
-                driveDistance(-25, 0.25);
+                driveDistance(-23, 0.25);
                 sleep(300);
                 intake.setMotorSpeed_intake(0.0);
                 servo.setServo_ramp(0.0);
                 //flywheel.setMotorSpeed(0.40, 0.40);
-                driveDistance(25, 0.4);
-                turnDegreesLeft(135, 0.3);
+                strafeDegreesLeft(7, 0.4);
+                driveDistance(18, 0.4);
+                turnDegreesRight(135, 0.3);
                 sleep(300);
                 first_launch=true;
                 stop_drive = false;
@@ -349,21 +344,9 @@ public class BLUE_NEAR_NINE_Camera_AdjustFlyWheel extends LinearOpMode
                 intake.setMotorSpeed_intake(0.0);
                 kicker.setServoRot(0.0);
                 flywheel.setMotorSpeed(0.0, 0.0);
-                turnDegreesRight(135, 0.4);
-                sleep(300);
-// === Step 6: Drive backward 24 inches (was forward) ===
-                strafeDegreesLeft(27,0.4);
-                sleep(300);
-                turnDegreesLeft(8, 0.4);
-                intake.setMotorSpeed_intake(1.0);
-                servo.setServo_ramp(1.0);
-                //strafeDegreesLeft(80, 0.4);
-                //sleep(500);
-                driveDistance(-20, 0.25);
-                //sleep(500);
-
-                stop_drive = false;
-                second_launch = true;
+                turnDegreesRight(50, 0.5);
+                driveDistance(10, 0.5);
+                stop_drive = false;   // set flag false
 
             }
 
